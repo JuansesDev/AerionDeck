@@ -1,31 +1,349 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:AerionDeck.Desktop.ViewModels"
+        xmlns:views="using:AerionDeck.Desktop.Views"
+        xmlns:conv="using:AerionDeck.Desktop.Converters"
+        xmlns:icons="using:AerionDeck.Desktop"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="700"
         x:Class="AerionDeck.Desktop.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="AerionDeck.Desktop">
+        Title="AerionDeck"
+        Width="550" Height="700"
+        MinWidth="450" MinHeight="600"
+        Background="#0d0d1a">
+
+    <Window.Resources>
+        <conv:IconConverter x:Key="IconConverter"/>
+    </Window.Resources>
 
     <Design.DataContext>
-    <vm:MainWindowViewModel/>
+        <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="20">
-        <TextBlock Text="{Binding Greeting}" 
-                HorizontalAlignment="Center" 
-                FontSize="24"/>
+    <Grid RowDefinitions="Auto,*,Auto">
+        
+        <!-- Header -->
+        <Border Grid.Row="0" 
+                Background="#15152a"
+                BoxShadow="0 2 10 0 #20000000">
+            <Grid Margin="20,14" ColumnDefinitions="Auto,*,Auto">
+                <!-- Botón volver -->
+                <Button Grid.Column="0" 
+                        Command="{Binding ToggleSettingsCommand}"
+                        Background="Transparent"
+                        Padding="8"
+                        CornerRadius="8"
+                        IsVisible="{Binding IsSettingsOpen}"
+                        Cursor="Hand">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover">
+                            <Setter Property="Background" Value="#25253a"/>
+                        </Style>
+                    </Button.Styles>
+                    <PathIcon Data="{x:Static icons:Icons.Back}" 
+                              Width="20" Height="20"
+                              Foreground="#aaa"/>
+                </Button>
+                
+                <!-- Título -->
+                <StackPanel Grid.Column="1" 
+                            Orientation="Horizontal" 
+                            Spacing="12"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <PathIcon Data="{x:Static icons:Icons.Gamepad}" 
+                              Width="24" Height="24"
+                              Foreground="#6366f1"
+                              IsVisible="{Binding !IsSettingsOpen}"/>
+                    <PathIcon Data="{x:Static icons:Icons.Settings}" 
+                              Width="22" Height="22"
+                              Foreground="#6366f1"
+                              IsVisible="{Binding IsSettingsOpen}"/>
+                    <TextBlock Text="{Binding CurrentViewTitle}" 
+                               FontSize="20" 
+                               FontWeight="SemiBold" 
+                               Foreground="#f0f0f0"/>
+                </StackPanel>
+                
+                <!-- Botón configuración -->
+                <Button Grid.Column="2" 
+                        Command="{Binding ToggleSettingsCommand}"
+                        Background="Transparent"
+                        Padding="8"
+                        CornerRadius="8"
+                        IsVisible="{Binding !IsSettingsOpen}"
+                        Cursor="Hand">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover">
+                            <Setter Property="Background" Value="#25253a"/>
+                        </Style>
+                    </Button.Styles>
+                    <PathIcon Data="{x:Static icons:Icons.Settings}" 
+                              Width="22" Height="22"
+                              Foreground="#888"/>
+                </Button>
+            </Grid>
+        </Border>
 
-        <Button Command="{Binding MuteCommand}"
-                HorizontalAlignment="Center"
-                Padding="20,10"
-                FontSize="18"
-                Background="#FF0055"
-                Foreground="White">
-            🔇 Mute / Unmute
-        </Button>
-    </StackPanel>
+        <!-- Contenido Principal (Home) -->
+        <ScrollViewer Grid.Row="1" 
+                      VerticalScrollBarVisibility="Auto"
+                      IsVisible="{Binding !IsSettingsOpen}">
+            <StackPanel Margin="24" Spacing="20">
+                
+                <!-- Sección: Control del Servidor -->
+                <Border Background="#15152a" 
+                        CornerRadius="16" 
+                        Padding="20"
+                        BoxShadow="0 4 20 0 #10000000">
+                    <StackPanel Spacing="16">
+                        <!-- Header de sección -->
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <PathIcon Data="{x:Static icons:Icons.Server}" 
+                                      Width="20" Height="20"
+                                      Foreground="#6366f1"/>
+                            <TextBlock Text="Servidor" 
+                                       FontSize="16" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="#f0f0f0"/>
+                        </StackPanel>
+                        
+                        <!-- Estado del servidor -->
+                        <Border Background="#0d0d1a" 
+                                CornerRadius="10" 
+                                Padding="14,12">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <!-- Indicador de estado -->
+                                <Border Width="10" Height="10" 
+                                        CornerRadius="5"
+                                        Margin="0,0,12,0"
+                                        VerticalAlignment="Center">
+                                    <Border.Background>
+                                        <SolidColorBrush Color="{Binding IsServerRunning, Converter={x:Static conv:IconConverter.Instance}, ConverterParameter=statusColor}"/>
+                                    </Border.Background>
+                                </Border>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding ServerStatus}" 
+                                           Foreground="#999"
+                                           FontSize="13"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        
+                        <!-- Botón iniciar/detener -->
+                        <Button Command="{Binding ToggleServerCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Padding="16,12"
+                                CornerRadius="10"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Background="{Binding ServerButtonColor}"
+                                Foreground="White"
+                                Cursor="Hand">
+                            <Button.Styles>
+                                <Style Selector="Button:pointerover">
+                                    <Setter Property="Opacity" Value="0.9"/>
+                                </Style>
+                                <Style Selector="Button:pressed">
+                                    <Setter Property="Opacity" Value="0.8"/>
+                                </Style>
+                            </Button.Styles>
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <PathIcon Data="{Binding IsServerRunning, Converter={x:Static conv:IconConverter.Instance}, ConverterParameter=playStop}"
+                                          Width="18" Height="18"
+                                          Foreground="White"/>
+                                <TextBlock Text="{Binding ServerButtonText}" 
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Sección: Conexión Móvil -->
+                <Border Background="#15152a" 
+                        CornerRadius="16" 
+                        Padding="20"
+                        BoxShadow="0 4 20 0 #10000000"
+                        IsVisible="{Binding IsServerRunning}">
+                    <StackPanel Spacing="16">
+                        <!-- Header de sección -->
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <PathIcon Data="{x:Static icons:Icons.Phone}" 
+                                      Width="20" Height="20"
+                                      Foreground="#6366f1"/>
+                            <TextBlock Text="Conexión móvil" 
+                                       FontSize="16" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="#f0f0f0"/>
+                        </StackPanel>
+                        
+                        <TextBlock Text="Escanea el código QR con tu teléfono para abrir el panel de control" 
+                                   Foreground="#666"
+                                   TextWrapping="Wrap"
+                                   FontSize="13"
+                                   LineHeight="20"/>
+                        
+                        <!-- QR Code -->
+                        <Border Background="#0d0d1a" 
+                                CornerRadius="16" 
+                                Padding="20"
+                                HorizontalAlignment="Center">
+                            <Image Source="{Binding QrCodeImage}" 
+                                   Width="180" 
+                                   Height="180"/>
+                        </Border>
+                        
+                        <!-- URL -->
+                        <Border Background="#0d0d1a" 
+                                CornerRadius="10" 
+                                Padding="14,10"
+                                HorizontalAlignment="Center">
+                            <StackPanel Spacing="6">
+                                <StackPanel Orientation="Horizontal" 
+                                            Spacing="8" 
+                                            HorizontalAlignment="Center">
+                                    <PathIcon Data="{x:Static icons:Icons.Link}" 
+                                              Width="14" Height="14"
+                                              Foreground="#666"/>
+                                    <TextBlock Text="{Binding MobilePanelUrl}" 
+                                               FontSize="13"
+                                               Foreground="#8b8bf0"
+                                               FontFamily="JetBrains Mono, Consolas, monospace"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding LocalIpAddress, StringFormat='IP local: {0}'}" 
+                                           HorizontalAlignment="Center" 
+                                           FontSize="11"
+                                           Foreground="#555"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Sección: Prueba Local -->
+                <Border Background="#15152a" 
+                        CornerRadius="16" 
+                        Padding="20"
+                        BoxShadow="0 4 20 0 #10000000">
+                    <StackPanel Spacing="16">
+                        <!-- Header de sección -->
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <PathIcon Data="{x:Static icons:Icons.Lightning}" 
+                                      Width="20" Height="20"
+                                      Foreground="#6366f1"/>
+                            <TextBlock Text="Prueba local" 
+                                       FontSize="16" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="#f0f0f0"/>
+                        </StackPanel>
+                        
+                        <TextBlock Text="Prueba las acciones configuradas directamente" 
+                                   Foreground="#666"
+                                   FontSize="13"/>
+                        
+                        <!-- Grid de acciones -->
+                        <ItemsControl ItemsSource="{Binding TestActions}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel HorizontalAlignment="Center"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:DeckActionViewModel">
+                                    <Button Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ExecuteActionCommand}"
+                                            CommandParameter="{Binding Model.Id}"
+                                            Margin="6"
+                                            Padding="0"
+                                            CornerRadius="14"
+                                            Width="90"
+                                            Height="90"
+                                            Background="{Binding BackgroundColor}"
+                                            Cursor="Hand">
+                                        <Button.Styles>
+                                            <Style Selector="Button:pointerover">
+                                                <Setter Property="Opacity" Value="0.85"/>
+                                                <Setter Property="RenderTransform" Value="scale(1.02)"/>
+                                            </Style>
+                                            <Style Selector="Button:pressed">
+                                                <Setter Property="Opacity" Value="0.75"/>
+                                                <Setter Property="RenderTransform" Value="scale(0.98)"/>
+                                            </Style>
+                                        </Button.Styles>
+                                        <StackPanel Spacing="8" 
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center">
+                                            <PathIcon Data="{Binding Icon, Converter={StaticResource IconConverter}}"
+                                                      Width="28" Height="28"
+                                                      Foreground="White"
+                                                      HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Name}" 
+                                                       Foreground="White" 
+                                                       FontSize="11"
+                                                       FontWeight="Medium"
+                                                       HorizontalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       MaxWidth="75"/>
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        
+                        <!-- Mensaje si no hay acciones -->
+                        <Border IsVisible="{Binding !TestActions.Count}"
+                                Background="#0d0d1a"
+                                CornerRadius="10"
+                                Padding="20">
+                            <StackPanel Spacing="10" HorizontalAlignment="Center">
+                                <PathIcon Data="{x:Static icons:Icons.Settings}"
+                                          Width="32" Height="32"
+                                          Foreground="#444"/>
+                                <TextBlock Text="No hay acciones configuradas" 
+                                           Foreground="#555"
+                                           FontSize="13"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Text="Abre la configuración para agregar acciones" 
+                                           Foreground="#444"
+                                           FontSize="11"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Panel de Configuración -->
+        <views:SettingsView Grid.Row="1" 
+                            DataContext="{Binding SettingsViewModel}"
+                            IsVisible="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).IsSettingsOpen}"/>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" 
+                Background="#15152a"
+                Padding="16,12">
+            <StackPanel Orientation="Horizontal" 
+                        Spacing="8"
+                        HorizontalAlignment="Center">
+                <TextBlock Text="AerionDeck" 
+                           Foreground="#444"
+                           FontSize="11"
+                           FontWeight="SemiBold"/>
+                <TextBlock Text="v0.1.0" 
+                           Foreground="#333"
+                           FontSize="11"/>
+                <TextBlock Text="•" 
+                           Foreground="#333"
+                           FontSize="11"/>
+                <TextBlock Text="Open Source Stream Deck" 
+                           Foreground="#333"
+                           FontSize="11"/>
+            </StackPanel>
+        </Border>
+    </Grid>
 
 </Window>

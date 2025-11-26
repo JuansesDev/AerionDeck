@@ -1,0 +1,500 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AerionDeck.Desktop.ViewModels"
+             xmlns:conv="using:AerionDeck.Desktop.Converters"
+             xmlns:icons="using:AerionDeck.Desktop"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="600"
+             x:Class="AerionDeck.Desktop.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel"
+             Background="#0d0d1a">
+
+    <UserControl.Resources>
+        <conv:IconConverter x:Key="IconConverter"/>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="*,Auto">
+        
+        <!-- Contenido principal -->
+        <ScrollViewer Grid.Row="0" 
+                      VerticalScrollBarVisibility="Auto"
+                      Margin="24,20">
+            <StackPanel Spacing="20">
+                
+                <!-- Sección: Lista de acciones -->
+                <Border Background="#15152a" 
+                        CornerRadius="16" 
+                        Padding="20"
+                        BoxShadow="0 4 20 0 #10000000">
+                    <StackPanel Spacing="16">
+                        <!-- Header -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <PathIcon Data="{x:Static icons:Icons.Lightning}" 
+                                          Width="20" Height="20"
+                                          Foreground="#6366f1"/>
+                                <TextBlock Text="Acciones" 
+                                           FontSize="16" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="#f0f0f0"/>
+                            </StackPanel>
+                            
+                            <!-- Botón agregar -->
+                            <Button Grid.Column="1"
+                                    Command="{Binding AddActionCommand}"
+                                    Background="#6366f1"
+                                    Padding="12,8"
+                                    CornerRadius="8"
+                                    Cursor="Hand">
+                                <Button.Styles>
+                                    <Style Selector="Button:pointerover">
+                                        <Setter Property="Background" Value="#7c7ff0"/>
+                                    </Style>
+                                </Button.Styles>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <PathIcon Data="{x:Static icons:Icons.Plus}"
+                                              Width="16" Height="16"
+                                              Foreground="White"/>
+                                    <TextBlock Text="Agregar" 
+                                               Foreground="White"
+                                               FontSize="13"
+                                               FontWeight="Medium"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        
+                        <!-- Lista de acciones -->
+                        <ItemsControl ItemsSource="{Binding Actions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:DeckActionViewModel">
+                                    <Border Background="#1a1a30"
+                                            CornerRadius="12"
+                                            Padding="14"
+                                            Margin="0,4"
+                                            Opacity="{Binding IsEnabled, Converter={x:Static vm:SettingsViewModel.EnabledOpacityConverter}}">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <!-- Icono y color -->
+                                            <Border Width="48" Height="48"
+                                                    CornerRadius="10"
+                                                    Background="{Binding BackgroundColor}"
+                                                    Margin="0,0,14,0">
+                                                <PathIcon Data="{Binding Icon, Converter={StaticResource IconConverter}}"
+                                                          Width="24" Height="24"
+                                                          Foreground="White"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                                            </Border>
+                                            
+                                            <!-- Info -->
+                                            <StackPanel Grid.Column="1" 
+                                                        VerticalAlignment="Center"
+                                                        Spacing="2">
+                                                <TextBlock Text="{Binding Name}"
+                                                           Foreground="#f0f0f0"
+                                                           FontSize="14"
+                                                           FontWeight="Medium"/>
+                                                <TextBlock Text="{Binding Model.Command}"
+                                                           Foreground="#666"
+                                                           FontSize="11"/>
+                                            </StackPanel>
+                                            
+                                            <!-- Controles -->
+                                            <StackPanel Grid.Column="2" 
+                                                        Orientation="Horizontal" 
+                                                        Spacing="6">
+                                                <!-- Mover arriba -->
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).MoveUpCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        Padding="8"
+                                                        CornerRadius="6"
+                                                        Cursor="Hand"
+                                                        ToolTip.Tip="Mover arriba">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button:pointerover">
+                                                            <Setter Property="Background" Value="#25253a"/>
+                                                        </Style>
+                                                    </Button.Styles>
+                                                    <PathIcon Data="{x:Static icons:Icons.ChevronUp}"
+                                                              Width="16" Height="16"
+                                                              Foreground="#666"/>
+                                                </Button>
+                                                
+                                                <!-- Mover abajo -->
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).MoveDownCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        Padding="8"
+                                                        CornerRadius="6"
+                                                        Cursor="Hand"
+                                                        ToolTip.Tip="Mover abajo">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button:pointerover">
+                                                            <Setter Property="Background" Value="#25253a"/>
+                                                        </Style>
+                                                    </Button.Styles>
+                                                    <PathIcon Data="{x:Static icons:Icons.ChevronDown}"
+                                                              Width="16" Height="16"
+                                                              Foreground="#666"/>
+                                                </Button>
+                                                
+                                                <!-- Separador visual -->
+                                                <Border Width="1" Height="24" Background="#333" Margin="4,0"/>
+                                                
+                                                <!-- Habilitar/Deshabilitar -->
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).ToggleEnabledCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        Padding="8"
+                                                        CornerRadius="6"
+                                                        Cursor="Hand"
+                                                        ToolTip.Tip="Habilitar/Deshabilitar">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button:pointerover">
+                                                            <Setter Property="Background" Value="#25253a"/>
+                                                        </Style>
+                                                    </Button.Styles>
+                                                    <PathIcon Data="{Binding IsEnabled, Converter={StaticResource IconConverter}, ConverterParameter=eye}"
+                                                              Width="16" Height="16"
+                                                              Foreground="{Binding IsEnabled, Converter={StaticResource IconConverter}, ConverterParameter=eyeColor}"/>
+                                                </Button>
+                                                
+                                                <!-- Editar -->
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).EditActionCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        Padding="8"
+                                                        CornerRadius="6"
+                                                        Cursor="Hand"
+                                                        ToolTip.Tip="Editar">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button:pointerover">
+                                                            <Setter Property="Background" Value="#6366f120"/>
+                                                        </Style>
+                                                    </Button.Styles>
+                                                    <PathIcon Data="{x:Static icons:Icons.Edit}"
+                                                              Width="16" Height="16"
+                                                              Foreground="#6366f1"/>
+                                                </Button>
+                                                
+                                                <!-- Eliminar -->
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).DeleteActionCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        Padding="8"
+                                                        CornerRadius="6"
+                                                        Cursor="Hand"
+                                                        ToolTip.Tip="Eliminar">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button:pointerover">
+                                                            <Setter Property="Background" Value="#e6394620"/>
+                                                        </Style>
+                                                    </Button.Styles>
+                                                    <PathIcon Data="{x:Static icons:Icons.Delete}"
+                                                              Width="16" Height="16"
+                                                              Foreground="#e63946"/>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        
+                        <!-- Mensaje vacío -->
+                        <Border IsVisible="{Binding !Actions.Count}"
+                                Background="#0d0d1a"
+                                CornerRadius="10"
+                                Padding="30">
+                            <StackPanel Spacing="12" HorizontalAlignment="Center">
+                                <PathIcon Data="{x:Static icons:Icons.Plus}"
+                                          Width="32" Height="32"
+                                          Foreground="#444"/>
+                                <TextBlock Text="No hay acciones configuradas" 
+                                           Foreground="#555"
+                                           FontSize="13"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Text="Presiona 'Agregar' para crear una nueva acción" 
+                                           Foreground="#444"
+                                           FontSize="11"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+                
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Panel de edición (overlay) -->
+        <Border Grid.Row="0" 
+                Background="#0d0d1acc"
+                IsVisible="{Binding IsEditing}">
+            <Border Background="#15152a" 
+                    CornerRadius="16" 
+                    Padding="24"
+                    MaxWidth="420"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    BoxShadow="0 8 40 0 #40000000">
+                <ScrollViewer MaxHeight="500" VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="20">
+                    <!-- Header del modal -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <PathIcon Data="{x:Static icons:Icons.Edit}" 
+                                      Width="20" Height="20"
+                                      Foreground="#6366f1"/>
+                            <TextBlock Text="Editar acción" 
+                                       FontSize="18" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="#f0f0f0"/>
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Command="{Binding CancelEditCommand}"
+                                Background="Transparent"
+                                Padding="6"
+                                CornerRadius="6"
+                                Cursor="Hand">
+                            <Button.Styles>
+                                <Style Selector="Button:pointerover">
+                                    <Setter Property="Background" Value="#25253a"/>
+                                </Style>
+                            </Button.Styles>
+                            <PathIcon Data="{x:Static icons:Icons.Close}"
+                                      Width="18" Height="18"
+                                      Foreground="#666"/>
+                        </Button>
+                    </Grid>
+                    
+                    <!-- Campo: Nombre -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Nombre" Foreground="#888" FontSize="12" FontWeight="Medium"/>
+                        <TextBox Text="{Binding EditName}" 
+                                 Background="#0d0d1a"
+                                 Foreground="White"
+                                 BorderBrush="#333"
+                                 BorderThickness="1"
+                                 CornerRadius="8"
+                                 Padding="12,10"/>
+                    </StackPanel>
+
+                    <!-- Campo: Icono -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Icono" Foreground="#888" FontSize="12" FontWeight="Medium"/>
+                        
+                        <!-- Buscador de iconos -->
+                        <TextBox Text="{Binding IconSearchText}" 
+                                 Watermark="Buscar icono..."
+                                 Background="#0d0d1a"
+                                 Foreground="White"
+                                 BorderBrush="#333"
+                                 BorderThickness="1"
+                                 CornerRadius="8"
+                                 Padding="8,6"
+                                 Margin="0,0,0,4"/>
+
+                        <Border Background="#0d0d1a" 
+                                CornerRadius="8" 
+                                Padding="10"
+                                BorderBrush="#333"
+                                BorderThickness="1">
+                            <ItemsControl ItemsSource="{Binding FilteredIconOptions}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="conv:IconOption">
+                                        <Button Background="{Binding Id, Converter={StaticResource IconConverter}, ConverterParameter=iconBg}"
+                                                Padding="8"
+                                                Margin="3"
+                                                CornerRadius="6"
+                                                Cursor="Hand"
+                                                ToolTip.Tip="{Binding Name}"
+                                                Click="OnIconClick"
+                                                Tag="{Binding Id}">
+                                            <Button.Styles>
+                                                <Style Selector="Button">
+                                                    <Setter Property="Background" Value="#1a1a30"/>
+                                                </Style>
+                                                <Style Selector="Button:pointerover">
+                                                    <Setter Property="Background" Value="#6366f140"/>
+                                                </Style>
+                                            </Button.Styles>
+                                            <PathIcon Data="{Binding Id, Converter={StaticResource IconConverter}}"
+                                                      Width="20" Height="20"
+                                                      Foreground="#aaa"/>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                        
+                        <!-- Preview del icono seleccionado -->
+                        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,4,0,0">
+                            <TextBlock Text="Seleccionado:" Foreground="#555" FontSize="11" VerticalAlignment="Center"/>
+                            <Border Width="32" Height="32"
+                                    CornerRadius="6"
+                                    Background="{Binding EditBackgroundColor}">
+                                <PathIcon Data="{Binding EditIcon, Converter={StaticResource IconConverter}}"
+                                          Width="18" Height="18"
+                                          Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Campo: Tipo de acción -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Tipo de acción" Foreground="#888" FontSize="12" FontWeight="Medium"/>
+                        <ComboBox ItemsSource="{Binding AvailableActionTypes}"
+                                  SelectedItem="{Binding EditActionType}"
+                                  Background="#0d0d1a"
+                                  Foreground="White"
+                                  CornerRadius="8"
+                                  Padding="12,10"
+                                  HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+
+                    <!-- Campo: Comando (ComboBox para Audio, TextBox para Launch) -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Comando" Foreground="#888" FontSize="12" FontWeight="Medium"/>
+                        
+                        <!-- ComboBox para selección de comandos predefinidos -->
+                        <ComboBox ItemsSource="{Binding AvailableCommands}"
+                                  SelectedItem="{Binding EditCommand}"
+                                  IsVisible="{Binding !IsLaunchType}"
+                                  Background="#0d0d1a"
+                                  Foreground="White"
+                                  CornerRadius="8"
+                                  Padding="12,10"
+                                  HorizontalAlignment="Stretch"/>
+                        
+                        <!-- TextBox para aplicaciones personalizadas -->
+                        <StackPanel IsVisible="{Binding IsLaunchType}" Spacing="6">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBox Text="{Binding EditCommand}" 
+                                         Background="#0d0d1a"
+                                         Foreground="White"
+                                         BorderBrush="#333"
+                                         BorderThickness="1"
+                                         CornerRadius="8"
+                                         Padding="12,10"
+                                         Watermark="Ej: code, obs, firefox"/>
+                                <Button Grid.Column="1"
+                                        Command="{Binding BrowseFileCommand}"
+                                        Margin="8,0,0,0"
+                                        Padding="10"
+                                        CornerRadius="8"
+                                        Background="#25253a"
+                                        ToolTip.Tip="Buscar archivo">
+                                    <PathIcon Data="{x:Static icons:Icons.Folder}" Foreground="#aaa"/>
+                                </Button>
+                            </Grid>
+                            <TextBlock Text="💡 Para abrir varias apps, sepáralas con comas: code, obs, discord" 
+                                       Foreground="#555"
+                                       FontSize="11"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Campo: Color -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Color" Foreground="#888" FontSize="12" FontWeight="Medium"/>
+                        <Border Background="#0d0d1a" 
+                                CornerRadius="8" 
+                                Padding="10"
+                                BorderBrush="#333"
+                                BorderThickness="1">
+                            <ItemsControl ItemsSource="{Binding SuggestedColors}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Background="{Binding}"
+                                                Width="36" Height="36"
+                                                Margin="3"
+                                                CornerRadius="8"
+                                                Cursor="Hand"
+                                                Click="OnColorClick">
+                                            <Button.Styles>
+                                                <Style Selector="Button:pointerover">
+                                                    <Setter Property="Opacity" Value="0.8"/>
+                                                </Style>
+                                            </Button.Styles>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Checkbox: Habilitado -->
+                    <CheckBox Content="Acción habilitada" 
+                              IsChecked="{Binding EditIsEnabled}"
+                              Foreground="#aaa"
+                              FontSize="13"/>
+
+                    <!-- Botones de acción -->
+                    <Grid ColumnDefinitions="*,*" Margin="0,8,0,0">
+                        <Button Grid.Column="0" 
+                                Command="{Binding CancelEditCommand}"
+                                Background="#333"
+                                Foreground="White"
+                                Padding="16,12"
+                                CornerRadius="10"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Margin="0,0,6,0"
+                                Cursor="Hand">
+                            <Button.Styles>
+                                <Style Selector="Button:pointerover">
+                                    <Setter Property="Background" Value="#444"/>
+                                </Style>
+                            </Button.Styles>
+                            <TextBlock Text="Cancelar" FontWeight="Medium"/>
+                        </Button>
+                        <Button Grid.Column="1" 
+                                Command="{Binding SaveEditCommand}"
+                                Background="#6366f1"
+                                Foreground="White"
+                                Padding="16,12"
+                                CornerRadius="10"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Margin="6,0,0,0"
+                                Cursor="Hand">
+                            <Button.Styles>
+                                <Style Selector="Button:pointerover">
+                                    <Setter Property="Background" Value="#7c7ff0"/>
+                                </Style>
+                            </Button.Styles>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <PathIcon Data="{x:Static icons:Icons.Check}"
+                                          Width="16" Height="16"
+                                          Foreground="White"/>
+                                <TextBlock Text="Guardar" FontWeight="Medium"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Border>
+
+        <!-- Footer -->
+        <Border Grid.Row="1" 
+                Background="#15152a"
+                Padding="16,12">
+            <TextBlock Text="Los cambios se guardan automáticamente" 
+                       HorizontalAlignment="Center"
+                       Foreground="#444"
+                       FontSize="11"/>
+        </Border>
+    </Grid>
+</UserControl>
