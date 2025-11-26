@@ -7,6 +7,13 @@ namespace AerionDeck.Desktop.Services;
 
 public class MacroExecutionService
 {
+    private readonly ObsControlService _obsService;
+
+    public MacroExecutionService(ObsControlService obsService)
+    {
+        _obsService = obsService;
+    }
+
     public async Task ExecuteMacroAsync(Macro macro)
     {
         Console.WriteLine($"▶️ Starting Macro: {macro.Name}");
@@ -54,6 +61,11 @@ public class MacroExecutionService
                     case MacroActionType.ChangeScene:
                         Console.WriteLine($"   Changing Scene to: {step.Value} (Not implemented)");
                         break;
+
+                    case MacroActionType.OBS_SwitchScene:
+                        Console.WriteLine($"   OBS Switch Scene: {step.Value}");
+                        await _obsService.SwitchSceneAsync(step.Value);
+                        break;
                 }
             }
             catch (Exception ex)
@@ -72,9 +84,10 @@ public class MacroExecutionService
     {
         return new Macro
         {
-            Key = "example_macro",
+            Id = "example_macro",
             Name = "Notepad Automation",
-            Steps = new System.Collections.Generic.List<MacroStep>
+            Description = "Opens Notepad, types text, and saves.",
+            Steps = new System.Collections.ObjectModel.ObservableCollection<MacroStep>
             {
                 // 1. Open Notepad
                 new MacroStep { Type = MacroActionType.RunCommand, Value = "notepad.exe" },

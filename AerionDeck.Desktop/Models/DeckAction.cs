@@ -28,6 +28,9 @@ public enum ActionType
 
     /// <summary>Delay execution (milliseconds)</summary>
     Delay,
+
+    /// <summary>Switch OBS Scene</summary>
+    OBS_SwitchScene,
     
     /// <summary>Custom action (future plugin)</summary>
     Custom
@@ -68,6 +71,9 @@ public class DeckAction
     /// <summary>Parent folder ID (null if root)</summary>
     public string? ParentFolderId { get; set; }
 
-    /// <summary>List of actions for macros</summary>
+    /// <summary>List of actions for macros (Legacy/Quick Macros)</summary>
     public List<DeckAction> MacroActions { get; set; } = new();
+
+    /// <summary>ID of the linked Advanced Macro</summary>
+    public string? MacroId { get; set; }
 }

@@ -60,6 +60,30 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
+        // Initialize Settings
+        _settings = AppSettings.Load();
+        
+        // Initialize Registry
+        _actionRegistry = new ActionRegistry(_settings);
+        
+        // Initialize Services
+        var systemControl = new LinuxSystemControl();
+        var obsService = new ObsControlService();
+        var macroManager = new MacroManagerService();
+        // Connect to OBS (Example: localhost:4455, password: "password")
+        Task.Run(() => obsService.ConnectAsync("ws://localhost:4455", "password"));
+
+        _actionRegistry.RegisterExecutor(new AudioActionExecutor(systemControl));
+        _actionRegistry.RegisterExecutor(new LaunchActionExecutor(systemControl));
+        _actionRegistry.RegisterExecutor(new MacroActionExecutor(_actionRegistry, obsService, macroManager));
+        _actionRegistry.RegisterExecutor(new DelayActionExecutor());
+        
+        // Create SettingsViewModel
+        SettingsViewModel = new SettingsViewModel(_settings, macroManager);
+
+        // Get Local IP
+        LocalIpAddress = NetworkUtils.GetLocalIpAddress();
+
         // Initialize state
         _serverStatus = Localization["ServerStatusStopped"];
 
@@ -76,27 +100,6 @@ public partial class MainWindowViewModel : ViewModelBase
             }
         };
 
-        // Load settings
-        _settings = AppSettings.Load();
-        
-        // Create action registry
-        _actionRegistry = new ActionRegistry(_settings);
-        
-        // Register action executors
-        var systemControl = new LinuxSystemControl();
-        _actionRegistry.RegisterExecutor(new AudioActionExecutor(systemControl));
-        _actionRegistry.RegisterExecutor(new LaunchActionExecutor(systemControl));
-        _actionRegistry.RegisterExecutor(new MacroActionExecutor(_actionRegistry));
-        _actionRegistry.RegisterExecutor(new DelayActionExecutor());
-        
-        // Create SettingsViewModel
-        SettingsViewModel = new SettingsViewModel(_settings);
-        
-        // Load local test actions
-        RefreshTestActions();
-        
-        // Configure network info
-        LocalIpAddress = EmbeddedWebServer.GetLocalIPAddress();
         MobilePanelUrl = $"http://{LocalIpAddress}:{ServerPort}";
         QrCodeImage = GenerateQrCode(MobilePanelUrl);
 

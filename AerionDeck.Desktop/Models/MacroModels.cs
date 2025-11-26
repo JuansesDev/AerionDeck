@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace AerionDeck.Desktop.Models;
 
@@ -7,7 +8,8 @@ public enum MacroActionType
     RunCommand,
     SendKeys,
     Delay,
-    ChangeScene
+    ChangeScene,
+    OBS_SwitchScene
 }
 
 public class MacroStep
@@ -18,7 +20,8 @@ public class MacroStep
 
 public class Macro
 {
-    public string Key { get; set; } = string.Empty;
+    public string Id { get; set; } = System.Guid.NewGuid().ToString();
     public string Name { get; set; } = string.Empty;
-    public List<MacroStep> Steps { get; set; } = new List<MacroStep>();
+    public string Description { get; set; } = string.Empty;
+    public ObservableCollection<MacroStep> Steps { get; set; } = new ObservableCollection<MacroStep>();
 }

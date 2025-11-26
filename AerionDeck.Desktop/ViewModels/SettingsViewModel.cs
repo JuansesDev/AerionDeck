@@ -56,11 +56,14 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private ObservableCollection<DeckActionViewModel> _actions = new();
 
-    [ObservableProperty]
-    private DeckActionViewModel? _selectedAction;
+
 
     [ObservableProperty]
     private bool _isEditing;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FilteredIconOptions))]
+    private string _iconSearchText = "";
 
     // For editing
     [ObservableProperty]
@@ -68,38 +71,74 @@ public partial class SettingsViewModel : ViewModelBase
     
     [ObservableProperty]
     private string _editIcon = "";
-    
+
+    [ObservableProperty]
+    private ActionType _editActionType;
+
     [ObservableProperty]
     private string _editCommand = "";
+
+    [ObservableProperty]
+    private string _editArguments = "";
+
+    [ObservableProperty]
+    private string _editBackgroundColor = "";
+
+    [ObservableProperty]
+    private bool _editIsEnabled;
     
-    [ObservableProperty]
-    private string _editBackgroundColor = "#0055aa";
+    private readonly MacroManagerService _macroManager;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FilteredIconOptions))]
-    private string _iconSearchText = "";
+    public ObservableCollection<ActionType> AvailableActionTypes { get; }
 
-    [ObservableProperty]
-    private bool _editIsEnabled = true;
+    // === Macro Manager ===
+    public MacroManagerViewModel MacroManager { get; }
 
+    // === Selection State ===
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(AvailableCommands))]
-    [NotifyPropertyChangedFor(nameof(IsLaunchType))]
+    [NotifyPropertyChangedFor(nameof(IsActionSelected))]
+    [NotifyPropertyChangedFor(nameof(EditName))]
+    [NotifyPropertyChangedFor(nameof(EditIcon))]
+    [NotifyPropertyChangedFor(nameof(EditActionType))]
+    [NotifyPropertyChangedFor(nameof(EditCommand))]
+    [NotifyPropertyChangedFor(nameof(EditArguments))]
+    [NotifyPropertyChangedFor(nameof(EditBackgroundColor))]
     [NotifyPropertyChangedFor(nameof(IsMacroType))]
-    [NotifyPropertyChangedFor(nameof(IsAudioType))]
-    private ActionType _editActionType = ActionType.Audio;
+    [NotifyPropertyChangedFor(nameof(SelectedMacroId))]
+    private DeckActionViewModel? _selectedAction;
 
-    // Available action types
-    public ActionType[] AvailableActionTypes { get; } = new[]
-    {
-        ActionType.Audio,
-        ActionType.Launch,
-        ActionType.Macro
-    };
-
-    // Helper properties for UI visibility
-    public bool IsLaunchType => EditActionType == ActionType.Launch;
+    public bool IsActionSelected => SelectedAction != null;
     public bool IsMacroType => EditActionType == ActionType.Macro;
+
+    // === Macro Selection for Action ===
+    public ObservableCollection<Macro> AvailableMacros => _macroManager.Macros;
+    
+    public string? SelectedMacroId
+    {
+        get => SelectedAction?.Model.MacroId;
+        set
+        {
+            if (SelectedAction != null && SelectedAction.Model.MacroId != value)
+            {
+                SelectedAction.Model.MacroId = value;
+                OnPropertyChanged();
+                SaveEdit();
+            }
+        }
+    }
+
+    public SettingsViewModel(AppSettings settings, MacroManagerService macroManager)
+    {
+        _settings = settings;
+        _macroManager = macroManager;
+        MacroManager = new MacroManagerViewModel(_macroManager);
+
+        AvailableActionTypes = new ObservableCollection<ActionType>(
+            Enum.GetValues(typeof(ActionType)).Cast<ActionType>()
+        );
+        LoadProfiles();
+    } // Helper properties for UI visibility
+    public bool IsLaunchType => EditActionType == ActionType.Launch;
     public bool IsAudioType => EditActionType == ActionType.Audio;
 
     // Available commands based on action type
@@ -152,11 +191,7 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private string _newProfileName = "";
 
-    public SettingsViewModel(AppSettings settings)
-    {
-        _settings = settings;
-        LoadProfiles();
-    }
+
 
     private void LoadProfiles()
     {
@@ -302,6 +337,7 @@ public partial class SettingsViewModel : ViewModelBase
         EditIcon = target.Icon;
         EditActionType = target.Model.Type;
         EditCommand = target.Model.Command;
+        EditArguments = target.Model.Arguments;
         EditBackgroundColor = target.BackgroundColor;
         EditIsEnabled = target.IsEnabled;
         IconSearchText = ""; // Reset search
@@ -403,6 +439,7 @@ public partial class SettingsViewModel : ViewModelBase
         SelectedAction.Model.Icon = EditIcon;
         SelectedAction.Model.Type = EditActionType;
         SelectedAction.Model.Command = EditCommand;
+        SelectedAction.Model.Arguments = EditArguments;
         SelectedAction.Model.BackgroundColor = EditBackgroundColor;
         SelectedAction.Model.IsEnabled = EditIsEnabled;
 
