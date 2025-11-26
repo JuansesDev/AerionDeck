@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.IO;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using AerionDeck.Desktop.Converters;
 using AerionDeck.Desktop.Models;
+using AerionDeck.Desktop.Services;
 using Avalonia.Data.Converters;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -15,11 +18,39 @@ public partial class SettingsViewModel : ViewModelBase
 {
     private readonly AppSettings _settings;
     
-    // Converters estáticos para XAML
+    // Localization
+    public LocalizationService Localization => LocalizationService.Instance;
+
+    public class LanguageOption
+    {
+        public string Code { get; set; } = "";
+        public string Name { get; set; } = "";
+    }
+
+    public LanguageOption[] Languages { get; } = new[]
+    {
+        new LanguageOption { Code = "es", Name = "Español" },
+        new LanguageOption { Code = "en", Name = "English" }
+    };
+
+    public LanguageOption SelectedLanguage
+    {
+        get => Languages.FirstOrDefault(l => l.Code == Localization.CurrentLanguage) ?? Languages[0];
+        set
+        {
+            if (value != null)
+            {
+                Localization.CurrentLanguage = value.Code;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    // Static Converters for XAML
     public static IValueConverter EnabledOpacityConverter { get; } = new BoolToOpacityConverter();
     public static IValueConverter EnabledTextConverter { get; } = new BoolToEnabledTextConverter();
     
-    // Evento para solicitar abrir archivo
+    // Event to request file open
     public event Action? RequestFileOpen;
 
     [ObservableProperty]
@@ -31,7 +62,7 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isEditing;
 
-    // Para edición
+    // For editing
     [ObservableProperty]
     private string _editName = "";
     
@@ -54,19 +85,24 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AvailableCommands))]
     [NotifyPropertyChangedFor(nameof(IsLaunchType))]
+    [NotifyPropertyChangedFor(nameof(IsMacroType))]
+    [NotifyPropertyChangedFor(nameof(IsAudioType))]
     private ActionType _editActionType = ActionType.Audio;
 
-    // Tipo de acciones disponibles
+    // Available action types
     public ActionType[] AvailableActionTypes { get; } = new[]
     {
         ActionType.Audio,
-        ActionType.Launch
+        ActionType.Launch,
+        ActionType.Macro
     };
 
-    // Si es tipo Launch, mostrar campo de texto libre
+    // Helper properties for UI visibility
     public bool IsLaunchType => EditActionType == ActionType.Launch;
+    public bool IsMacroType => EditActionType == ActionType.Macro;
+    public bool IsAudioType => EditActionType == ActionType.Audio;
 
-    // Comandos disponibles según el tipo de acción
+    // Available commands based on action type
     public string[] AvailableCommands => EditActionType switch
     {
         ActionType.Audio => new[]
@@ -92,7 +128,7 @@ public partial class SettingsViewModel : ViewModelBase
         _ => Array.Empty<string>()
     };
 
-    // Iconos disponibles (usando el nuevo sistema)
+    // Available icons (using new system)
     public IEnumerable<IconOption> FilteredIconOptions => 
         string.IsNullOrWhiteSpace(IconSearchText) 
             ? Converters.AvailableIcons.All 
@@ -100,25 +136,117 @@ public partial class SettingsViewModel : ViewModelBase
                 i.Name.Contains(IconSearchText, StringComparison.OrdinalIgnoreCase) || 
                 i.Id.Contains(IconSearchText, StringComparison.OrdinalIgnoreCase));
 
-    // Colores sugeridos
+    // Suggested colors
     public string[] SuggestedColors { get; } = new[]
     {
         "#e63946", "#f4a261", "#2a9d8f", "#6366f1", "#8b5cf6", 
         "#ec4899", "#10b981", "#f59e0b", "#64748b", "#1e293b"
     };
 
+    [ObservableProperty]
+    private ObservableCollection<Profile> _profiles = new();
+
+    [ObservableProperty]
+    private Profile? _selectedProfile;
+
+    [ObservableProperty]
+    private string _newProfileName = "";
+
     public SettingsViewModel(AppSettings settings)
     {
         _settings = settings;
-        LoadActions();
+        LoadProfiles();
+    }
+
+    private void LoadProfiles()
+    {
+        Profiles.Clear();
+        foreach (var profile in _settings.Profiles)
+        {
+            Profiles.Add(profile);
+        }
+
+        var current = Profiles.FirstOrDefault(p => p.Id == _settings.CurrentProfileId);
+        SelectedProfile = current ?? Profiles.FirstOrDefault();
+        
+        if (SelectedProfile != null)
+        {
+            LoadActions();
+        }
+    }
+
+    partial void OnSelectedProfileChanged(Profile? value)
+    {
+        if (value != null)
+        {
+            _settings.CurrentProfileId = value.Id;
+            LoadActions();
+            SaveChanges();
+        }
     }
 
     private void LoadActions()
     {
         Actions.Clear();
-        foreach (var action in _settings.Actions.OrderBy(a => a.Order))
+        if (SelectedProfile == null) return;
+
+        foreach (var action in SelectedProfile.Actions.OrderBy(a => a.Order))
         {
             Actions.Add(new DeckActionViewModel(action));
+        }
+    }
+
+    [RelayCommand]
+    private void AddProfile()
+    {
+        if (string.IsNullOrWhiteSpace(NewProfileName)) return;
+
+        var profile = new Profile
+        {
+            Name = NewProfileName,
+            Actions = new List<DeckAction>()
+        };
+
+        _settings.Profiles.Add(profile);
+        Profiles.Add(profile);
+        SelectedProfile = profile;
+        NewProfileName = "";
+        SaveChanges();
+    }
+
+    [RelayCommand]
+    private void DeleteProfile()
+    {
+        if (SelectedProfile == null || Profiles.Count <= 1) return;
+
+        var profileToRemove = SelectedProfile;
+        var index = Profiles.IndexOf(profileToRemove);
+        
+        // Select another profile before deleting
+        SelectedProfile = Profiles[index == 0 ? 1 : index - 1];
+        
+        _settings.Profiles.Remove(profileToRemove);
+        Profiles.Remove(profileToRemove);
+        SaveChanges();
+    }
+
+    [RelayCommand]
+    private void ExportProfile()
+    {
+        if (SelectedProfile == null) return;
+        
+        try 
+        {
+            var json = JsonSerializer.Serialize(SelectedProfile, new JsonSerializerOptions { WriteIndented = true });
+            var fileName = $"profile_{SelectedProfile.Name}_{DateTime.Now:yyyyMMdd}.json";
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), fileName);
+            File.WriteAllText(path, json);
+            Console.WriteLine($"Perfil exportado a: {path}");
+            // TODO: Show notification to user
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error exportando perfil: {ex.Message}");
         }
     }
 
@@ -177,6 +305,17 @@ public partial class SettingsViewModel : ViewModelBase
         EditBackgroundColor = target.BackgroundColor;
         EditIsEnabled = target.IsEnabled;
         IconSearchText = ""; // Reset search
+        
+        // Load sub-actions if macro
+        MacroSubActions.Clear();
+        if (target.Model.MacroActions != null)
+        {
+            foreach (var subAction in target.Model.MacroActions)
+            {
+                MacroSubActions.Add(new DeckActionViewModel(subAction));
+            }
+        }
+
         IsEditing = true;
     }
 
@@ -185,6 +324,69 @@ public partial class SettingsViewModel : ViewModelBase
     {
         RequestFileOpen?.Invoke();
     }
+
+    // === Macro Editing ===
+    [ObservableProperty]
+    private ObservableCollection<DeckActionViewModel> _macroSubActions = new();
+
+
+
+    partial void OnEditActionTypeChanged(ActionType value)
+    {
+        OnPropertyChanged(nameof(IsLaunchType));
+        OnPropertyChanged(nameof(IsMacroType));
+        OnPropertyChanged(nameof(AvailableCommands));
+    }
+
+    [RelayCommand]
+    private void AddSubAction()
+    {
+        var newAction = new DeckAction
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "New Sub-Action",
+            Icon = "lightning",
+            Type = ActionType.Audio,
+            Command = "toggle-mute",
+            BackgroundColor = "#444444",
+            IsEnabled = true
+        };
+        MacroSubActions.Add(new DeckActionViewModel(newAction));
+    }
+
+    [RelayCommand]
+    private void RemoveSubAction(DeckActionViewModel? action)
+    {
+        if (action != null)
+        {
+            MacroSubActions.Remove(action);
+        }
+    }
+
+    [RelayCommand]
+    private void MoveSubActionUp(DeckActionViewModel? action)
+    {
+        if (action == null) return;
+        var index = MacroSubActions.IndexOf(action);
+        if (index > 0)
+        {
+            MacroSubActions.Move(index, index - 1);
+        }
+    }
+
+    [RelayCommand]
+    private void MoveSubActionDown(DeckActionViewModel? action)
+    {
+        if (action == null) return;
+        var index = MacroSubActions.IndexOf(action);
+        if (index < MacroSubActions.Count - 1)
+        {
+            MacroSubActions.Move(index, index + 1);
+        }
+    }
+
+    [ObservableProperty]
+    private bool _isAddingNew;
 
     [RelayCommand]
     private void SaveEdit()
@@ -196,7 +398,7 @@ public partial class SettingsViewModel : ViewModelBase
         SelectedAction.BackgroundColor = EditBackgroundColor;
         SelectedAction.IsEnabled = EditIsEnabled;
         
-        // Actualizar el modelo
+        // Update model
         SelectedAction.Model.Name = EditName;
         SelectedAction.Model.Icon = EditIcon;
         SelectedAction.Model.Type = EditActionType;
@@ -204,6 +406,13 @@ public partial class SettingsViewModel : ViewModelBase
         SelectedAction.Model.BackgroundColor = EditBackgroundColor;
         SelectedAction.Model.IsEnabled = EditIsEnabled;
 
+        // Save sub-actions if macro
+        if (EditActionType == ActionType.Macro)
+        {
+            SelectedAction.Model.MacroActions = MacroSubActions.Select(vm => vm.Model).ToList();
+        }
+
+        IsAddingNew = false;
         IsEditing = false;
         SaveChanges();
     }
@@ -211,16 +420,23 @@ public partial class SettingsViewModel : ViewModelBase
     [RelayCommand]
     private void CancelEdit()
     {
+        if (IsAddingNew && SelectedAction != null)
+        {
+            DeleteAction(SelectedAction);
+        }
+        IsAddingNew = false;
         IsEditing = false;
     }
 
     [RelayCommand]
     private void AddAction()
     {
+        if (SelectedProfile == null) return;
+
         var newAction = new DeckAction
         {
             Id = Guid.NewGuid().ToString(),
-            Name = "Nueva Acción",
+            Name = Localization["NewAction"],
             Icon = "lightning",
             Type = ActionType.Audio,
             Command = "toggle-mute",
@@ -229,13 +445,14 @@ public partial class SettingsViewModel : ViewModelBase
             IsEnabled = true
         };
 
-        _settings.Actions.Add(newAction);
+        SelectedProfile.Actions.Add(newAction);
         var vm = new DeckActionViewModel(newAction);
         Actions.Add(vm);
         SelectedAction = vm;
         SaveChanges();
         
-        // Abrir editor automáticamente
+        IsAddingNew = true;
+        // Open editor automatically
         EditAction(vm);
     }
 
@@ -243,10 +460,10 @@ public partial class SettingsViewModel : ViewModelBase
     private void DeleteAction(DeckActionViewModel? action)
     {
         var target = action ?? SelectedAction;
-        if (target == null) return;
+        if (target == null || SelectedProfile == null) return;
 
         var model = target.Model;
-        _settings.Actions.Remove(model);
+        SelectedProfile.Actions.Remove(model);
         Actions.Remove(target);
         SelectedAction = null;
         UpdateOrders();
@@ -269,7 +486,7 @@ public partial class SettingsViewModel : ViewModelBase
 }
 
 /// <summary>
-/// ViewModel para cada acción individual (para binding en la UI)
+/// ViewModel for individual action (for UI binding)
 /// </summary>
 public partial class DeckActionViewModel : ObservableObject
 {
@@ -297,7 +514,7 @@ public partial class DeckActionViewModel : ObservableObject
     }
 }
 
-// Converters inline
+// Inline Converters
 public class BoolToOpacityConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)

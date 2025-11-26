@@ -41,7 +41,10 @@ public class ActionRegistry
     /// </summary>
     public bool ExecuteAction(string actionId)
     {
-        var action = _settings.Actions.FirstOrDefault(a => a.Id == actionId);
+        var profile = _settings.Profiles.FirstOrDefault(p => p.Id == _settings.CurrentProfileId);
+        if (profile == null) return false;
+
+        var action = profile.Actions.FirstOrDefault(a => a.Id == actionId);
         
         if (action == null)
         {
@@ -83,38 +86,52 @@ public class ActionRegistry
     }
 
     /// <summary>
-    /// Obtiene todas las acciones configuradas
+    /// Obtiene todas las acciones configuradas del perfil actual
     /// </summary>
-    public IReadOnlyList<DeckAction> GetActions() => _settings.Actions.AsReadOnly();
+    public IReadOnlyList<DeckAction> GetActions()
+    {
+        var profile = _settings.Profiles.FirstOrDefault(p => p.Id == _settings.CurrentProfileId);
+        return profile?.Actions.AsReadOnly() ?? new List<DeckAction>().AsReadOnly();
+    }
 
     /// <summary>
     /// Obtiene acciones de una carpeta específica (o raíz si parentId es null)
     /// </summary>
     public IEnumerable<DeckAction> GetActionsInFolder(string? parentId = null)
     {
-        return _settings.Actions
+        var profile = _settings.Profiles.FirstOrDefault(p => p.Id == _settings.CurrentProfileId);
+        if (profile == null) return Enumerable.Empty<DeckAction>();
+
+        return profile.Actions
             .Where(a => a.ParentFolderId == parentId)
             .OrderBy(a => a.Order);
     }
 
     /// <summary>
-    /// Agrega una nueva acción
+    /// Agrega una nueva acción al perfil actual
     /// </summary>
     public void AddAction(DeckAction action)
     {
-        _settings.Actions.Add(action);
-        _settings.Save();
+        var profile = _settings.Profiles.FirstOrDefault(p => p.Id == _settings.CurrentProfileId);
+        if (profile != null)
+        {
+            profile.Actions.Add(action);
+            _settings.Save();
+        }
     }
 
     /// <summary>
-    /// Elimina una acción por ID
+    /// Elimina una acción por ID del perfil actual
     /// </summary>
     public bool RemoveAction(string actionId)
     {
-        var action = _settings.Actions.FirstOrDefault(a => a.Id == actionId);
+        var profile = _settings.Profiles.FirstOrDefault(p => p.Id == _settings.CurrentProfileId);
+        if (profile == null) return false;
+
+        var action = profile.Actions.FirstOrDefault(a => a.Id == actionId);
         if (action != null)
         {
-            _settings.Actions.Remove(action);
+            profile.Actions.Remove(action);
             _settings.Save();
             return true;
         }
@@ -126,10 +143,13 @@ public class ActionRegistry
     /// </summary>
     public void UpdateAction(DeckAction action)
     {
-        var index = _settings.Actions.FindIndex(a => a.Id == action.Id);
+        var profile = _settings.Profiles.FirstOrDefault(p => p.Id == _settings.CurrentProfileId);
+        if (profile == null) return;
+
+        var index = profile.Actions.FindIndex(a => a.Id == action.Id);
         if (index >= 0)
         {
-            _settings.Actions[index] = action;
+            profile.Actions[index] = action;
             _settings.Save();
         }
     }

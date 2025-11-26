@@ -28,8 +28,16 @@ public class AppSettings
     /// <summary>Iniciar con el sistema</summary>
     public bool StartWithSystem { get; set; } = false;
     
-    /// <summary>Lista de acciones configuradas</summary>
-    public List<DeckAction> Actions { get; set; } = new();
+    /// <summary>Lista de perfiles configurados</summary>
+    public List<Profile> Profiles { get; set; } = new();
+
+    /// <summary>ID del perfil actual</summary>
+    public string CurrentProfileId { get; set; } = "";
+
+    /// <summary>
+    /// Propiedad temporal para migración de versiones anteriores
+    /// </summary>
+    public List<DeckAction>? Actions { get; set; }
 
     /// <summary>
     /// Carga la configuración desde disco
@@ -41,7 +49,23 @@ public class AppSettings
             if (File.Exists(ConfigPath))
             {
                 var json = File.ReadAllText(ConfigPath);
-                return JsonSerializer.Deserialize<AppSettings>(json) ?? CreateDefault();
+                var settings = JsonSerializer.Deserialize<AppSettings>(json) ?? CreateDefault();
+                
+                // Migración: Si hay acciones sueltas pero no perfiles, moverlas a un perfil default
+                if (settings.Profiles.Count == 0)
+                {
+                    var defaultProfile = new Profile
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Name = "Default",
+                        Actions = settings.Actions ?? new List<DeckAction>()
+                    };
+                    settings.Profiles.Add(defaultProfile);
+                    settings.CurrentProfileId = defaultProfile.Id;
+                    settings.Actions = null; // Limpiar lista antigua
+                }
+                
+                return settings;
             }
         }
         catch (Exception ex)
@@ -82,8 +106,10 @@ public class AppSettings
     /// </summary>
     private static AppSettings CreateDefault()
     {
-        var settings = new AppSettings
+        var defaultProfile = new Profile
         {
+            Id = Guid.NewGuid().ToString(),
+            Name = "Default",
             Actions = new List<DeckAction>
             {
                 new()
@@ -147,6 +173,12 @@ public class AppSettings
                     Order = 5
                 }
             }
+        };
+
+        var settings = new AppSettings
+        {
+            Profiles = new List<Profile> { defaultProfile },
+            CurrentProfileId = defaultProfile.Id
         };
         
         settings.Save();

@@ -1,63 +1,73 @@
 using System;
+using System.Collections.Generic;
 
 namespace AerionDeck.Desktop.Models;
 
 /// <summary>
-/// Tipos de acciones soportadas por AerionDeck
+/// Supported action types in AerionDeck
 /// </summary>
 public enum ActionType
 {
-    /// <summary>Controles de audio del sistema</summary>
+    /// <summary>System audio controls</summary>
     Audio,
     
-    /// <summary>Ejecutar aplicación o comando</summary>
+    /// <summary>Launch application or command</summary>
     Launch,
     
-    /// <summary>Enviar combinación de teclas (hotkey)</summary>
+    /// <summary>Send key combination (hotkey)</summary>
     Hotkey,
     
-    /// <summary>Abrir URL en el navegador</summary>
+    /// <summary>Open URL in browser</summary>
     WebLink,
     
-    /// <summary>Carpeta que contiene más acciones</summary>
+    /// <summary>Folder containing more actions</summary>
     Folder,
     
-    /// <summary>Acción personalizada (plugin futuro)</summary>
+    /// <summary>Sequence of actions</summary>
+    Macro,
+
+    /// <summary>Delay execution (milliseconds)</summary>
+    Delay,
+    
+    /// <summary>Custom action (future plugin)</summary>
     Custom
 }
 
 /// <summary>
-/// Representa una acción configurable del deck
+/// Represents a configurable deck action
 /// </summary>
 public class DeckAction
 {
-    /// <summary>Identificador único de la acción</summary>
+    /// <summary>Unique action identifier</summary>
     public string Id { get; set; } = Guid.NewGuid().ToString();
     
-    /// <summary>Nombre visible de la acción</summary>
+    /// <summary>Visible name of the action</summary>
     public string Name { get; set; } = string.Empty;
     
-    /// <summary>Identificador del icono (ej: "volume-mute", "volume-up")</summary>
+    /// <summary>Icon identifier (e.g., "volume-mute", "volume-up")</summary>
     public string Icon { get; set; } = "lightning";
     
-    /// <summary>Tipo de acción</summary>
+    /// <summary>Action type</summary>
     public ActionType Type { get; set; } = ActionType.Custom;
     
-    /// <summary>Comando o parámetro principal de la acción</summary>
+    /// <summary>Main command or parameter for the action</summary>
     public string Command { get; set; } = string.Empty;
     
-    /// <summary>Argumentos adicionales si aplica</summary>
+    /// <summary>Additional arguments if applicable</summary>
     public string Arguments { get; set; } = string.Empty;
     
-    /// <summary>Color de fondo del botón (hex)</summary>
+    /// <summary>Button background color (hex)</summary>
     public string BackgroundColor { get; set; } = "#0055aa";
     
-    /// <summary>Si la acción está habilitada</summary>
+    /// <summary>Whether the action is enabled</summary>
     public bool IsEnabled { get; set; } = true;
     
-    /// <summary>Orden de visualización</summary>
+    /// <summary>Display order</summary>
     public int Order { get; set; } = 0;
     
-    /// <summary>ID de la carpeta padre (null si está en raíz)</summary>
+    /// <summary>Parent folder ID (null if root)</summary>
     public string? ParentFolderId { get; set; }
+
+    /// <summary>List of actions for macros</summary>
+    public List<DeckAction> MacroActions { get; set; } = new();
 }

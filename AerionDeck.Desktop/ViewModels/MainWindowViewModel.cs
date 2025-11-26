@@ -22,74 +22,97 @@ public partial class MainWindowViewModel : ViewModelBase
     
     private const int ServerPort = 5000;
 
-    // === Estado del servidor ===
+    // Localization
+    public LocalizationService Localization => LocalizationService.Instance;
+
+    // === Server State ===
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ServerButtonText))]
     [NotifyPropertyChangedFor(nameof(ServerButtonColor))]
     private bool _isServerRunning;
 
     [ObservableProperty]
-    private string _serverStatus = "Servidor detenido";
+    private string _serverStatus;
 
-    // === Propiedades derivadas para el botón ===
-    public string ServerButtonText => IsServerRunning ? "Detener servidor" : "Iniciar servidor";
+    // === Derived properties for button ===
+    public string ServerButtonText => IsServerRunning ? Localization["ServerStop"] : Localization["ServerStart"];
     public IBrush ServerButtonColor => IsServerRunning 
         ? new SolidColorBrush(Color.Parse("#e63946")) 
         : new SolidColorBrush(Color.Parse("#6366f1"));
 
-    // === Información de conexión ===
+    // === Connection Info ===
     public string LocalIpAddress { get; }
     public string MobilePanelUrl { get; }
     public Bitmap? QrCodeImage { get; }
 
-    // === Navegación ===
+    // === Navigation ===
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CurrentViewTitle))]
     private bool _isSettingsOpen;
 
-    public string CurrentViewTitle => IsSettingsOpen ? "Configuración" : "AerionDeck";
+    public string CurrentViewTitle => IsSettingsOpen ? Localization["Settings"] : Localization["AppTitle"];
 
     // === Settings ViewModel ===
     public SettingsViewModel SettingsViewModel { get; }
 
-    // === Acciones para prueba local ===
+    // === Local Test Actions ===
     public ObservableCollection<DeckActionViewModel> TestActions { get; } = new();
 
     public MainWindowViewModel()
     {
-        // Cargar configuración
+        // Initialize state
+        _serverStatus = Localization["ServerStatusStopped"];
+
+        // Subscribe to language changes
+        Localization.PropertyChanged += (s, e) =>
+        {
+            OnPropertyChanged(nameof(ServerButtonText));
+            OnPropertyChanged(nameof(CurrentViewTitle));
+            OnPropertyChanged(nameof(FormattedLocalIpAddress));
+            // Update status if not running (if running, it has dynamic message)
+            if (!IsServerRunning)
+            {
+                ServerStatus = Localization["ServerStatusStopped"];
+            }
+        };
+
+        // Load settings
         _settings = AppSettings.Load();
         
-        // Crear el registro de acciones
+        // Create action registry
         _actionRegistry = new ActionRegistry(_settings);
         
-        // Registrar ejecutores de acciones
+        // Register action executors
         var systemControl = new LinuxSystemControl();
         _actionRegistry.RegisterExecutor(new AudioActionExecutor(systemControl));
         _actionRegistry.RegisterExecutor(new LaunchActionExecutor(systemControl));
+        _actionRegistry.RegisterExecutor(new MacroActionExecutor(_actionRegistry));
+        _actionRegistry.RegisterExecutor(new DelayActionExecutor());
         
-        // Crear SettingsViewModel
+        // Create SettingsViewModel
         SettingsViewModel = new SettingsViewModel(_settings);
         
-        // Cargar acciones para prueba local
+        // Load local test actions
         RefreshTestActions();
         
-        // Configurar información de red
+        // Configure network info
         LocalIpAddress = EmbeddedWebServer.GetLocalIPAddress();
         MobilePanelUrl = $"http://{LocalIpAddress}:{ServerPort}";
         QrCodeImage = GenerateQrCode(MobilePanelUrl);
 
-        // Auto-iniciar servidor si está configurado
+        // Auto-start server if configured
         if (_settings.AutoStartServer)
         {
             Task.Run(StartServerAsync);
         }
     }
 
+    public string FormattedLocalIpAddress => string.Format(Localization["LocalIp"], LocalIpAddress);
+
     private void RefreshTestActions()
     {
         TestActions.Clear();
-        foreach (var action in _settings.Actions.Where(a => a.IsEnabled).OrderBy(a => a.Order))
+        foreach (var action in _actionRegistry.GetActions().Where(a => a.IsEnabled).OrderBy(a => a.Order))
         {
             TestActions.Add(new DeckActionViewModel(action));
         }
@@ -113,7 +136,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (IsSettingsOpen)
         {
-            // Al cerrar settings, refrescar las acciones de prueba
+            // Refresh test actions when closing settings
             RefreshTestActions();
         }
         IsSettingsOpen = !IsSettingsOpen;
@@ -131,31 +154,31 @@ public partial class MainWindowViewModel : ViewModelBase
 
         try
         {
-            ServerStatus = "Iniciando servidor...";
+            ServerStatus = Localization["ServerStatusStarting"];
             
             _webServer = new EmbeddedWebServer();
             
-            // Configurar el proveedor de acciones para la API
+            // Configure action provider for API
             _webServer.SetActionsProvider(() => _actionRegistry.GetActions());
             
-            // Suscribirse al Hub para recibir acciones
+            // Subscribe to Hub to receive actions
             AerionHub.OnActionReceived += HandleRemoteAction;
             
-            // Iniciar en un hilo separado
+            // Start in separate thread
             _ = Task.Run(() => _webServer.StartAsync(ServerPort));
             
-            // Esperar un poco para que inicie
+            // Wait a bit for startup
             await Task.Delay(500);
             
             IsServerRunning = true;
-            ServerStatus = $"Servidor activo en {MobilePanelUrl}";
+            ServerStatus = $"{Localization["ServerStatusActive"]} {MobilePanelUrl}";
             
-            Console.WriteLine($"🚀 Servidor iniciado: {MobilePanelUrl}");
+            Console.WriteLine($"🚀 Server started: {MobilePanelUrl}");
         }
         catch (Exception ex)
         {
             ServerStatus = $"Error: {ex.Message}";
-            Console.WriteLine($"❌ Error iniciando servidor: {ex.Message}");
+            Console.WriteLine($"❌ Error starting server: {ex.Message}");
         }
     }
 
@@ -165,26 +188,26 @@ public partial class MainWindowViewModel : ViewModelBase
 
         try
         {
-            ServerStatus = "Deteniendo servidor...";
+            ServerStatus = Localization["ServerStop"] + "...";
             
             AerionHub.OnActionReceived -= HandleRemoteAction;
             await _webServer.StopAsync();
             
             IsServerRunning = false;
-            ServerStatus = "Servidor detenido";
+            ServerStatus = Localization["ServerStatusStopped"];
             
-            Console.WriteLine("🛑 Servidor detenido");
+            Console.WriteLine("🛑 Server stopped");
         }
         catch (Exception ex)
         {
             ServerStatus = $"Error: {ex.Message}";
-            Console.WriteLine($"❌ Error deteniendo servidor: {ex.Message}");
+            Console.WriteLine($"❌ Error stopping server: {ex.Message}");
         }
     }
 
     private void HandleRemoteAction(string actionId)
     {
-        Console.WriteLine($"📱 Acción remota recibida: {actionId}");
+        Console.WriteLine($"📱 Remote action received: {actionId}");
         _actionRegistry.ExecuteAction(actionId);
     }
 
@@ -196,7 +219,7 @@ public partial class MainWindowViewModel : ViewModelBase
             using var qrCodeData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
             using var qrCode = new PngByteQRCode(qrCodeData);
             
-            // Colores invertidos: fondo oscuro, código claro
+            // Inverted colors: dark background, light code
             var qrCodeBytes = qrCode.GetGraphic(10, new byte[] { 255, 255, 255 }, new byte[] { 26, 26, 46 });
             
             using var stream = new MemoryStream(qrCodeBytes);
@@ -204,18 +227,18 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Error generando QR: {ex.Message}");
+            Console.WriteLine($"❌ Error generating QR: {ex.Message}");
             return null;
         }
     }
 
     /// <summary>
-    /// Obtiene el ActionRegistry para uso externo
+    /// Gets ActionRegistry for external use
     /// </summary>
     public ActionRegistry GetActionRegistry() => _actionRegistry;
     
     /// <summary>
-    /// Obtiene la configuración
+    /// Gets Settings
     /// </summary>
     public AppSettings GetSettings() => _settings;
 }

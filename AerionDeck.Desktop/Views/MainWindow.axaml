@@ -105,7 +105,7 @@
                             <PathIcon Data="{x:Static icons:Icons.Server}" 
                                       Width="20" Height="20"
                                       Foreground="#6366f1"/>
-                            <TextBlock Text="Servidor" 
+                            <TextBlock Text="{Binding Localization[ServerTitle]}" 
                                        FontSize="16" 
                                        FontWeight="SemiBold" 
                                        Foreground="#f0f0f0"/>
@@ -175,13 +175,13 @@
                             <PathIcon Data="{x:Static icons:Icons.Phone}" 
                                       Width="20" Height="20"
                                       Foreground="#6366f1"/>
-                            <TextBlock Text="Conexión móvil" 
+                            <TextBlock Text="{Binding Localization[MobileConnection]}" 
                                        FontSize="16" 
                                        FontWeight="SemiBold" 
                                        Foreground="#f0f0f0"/>
                         </StackPanel>
                         
-                        <TextBlock Text="Escanea el código QR con tu teléfono para abrir el panel de control" 
+                        <TextBlock Text="{Binding Localization[ScanQrCode]}" 
                                    Foreground="#666"
                                    TextWrapping="Wrap"
                                    FontSize="13"
@@ -214,7 +214,7 @@
                                                Foreground="#8b8bf0"
                                                FontFamily="JetBrains Mono, Consolas, monospace"/>
                                 </StackPanel>
-                                <TextBlock Text="{Binding LocalIpAddress, StringFormat='IP local: {0}'}" 
+                                <TextBlock Text="{Binding FormattedLocalIpAddress}" 
                                            HorizontalAlignment="Center" 
                                            FontSize="11"
                                            Foreground="#555"/>
@@ -234,13 +234,13 @@
                             <PathIcon Data="{x:Static icons:Icons.Lightning}" 
                                       Width="20" Height="20"
                                       Foreground="#6366f1"/>
-                            <TextBlock Text="Prueba local" 
+                            <TextBlock Text="{Binding Localization[LocalTest]}" 
                                        FontSize="16" 
                                        FontWeight="SemiBold" 
                                        Foreground="#f0f0f0"/>
                         </StackPanel>
                         
-                        <TextBlock Text="Prueba las acciones configuradas directamente" 
+                        <TextBlock Text="{Binding Localization[LocalTestDesc]}" 
                                    Foreground="#666"
                                    FontSize="13"/>
                         
@@ -301,11 +301,11 @@
                                 <PathIcon Data="{x:Static icons:Icons.Settings}"
                                           Width="32" Height="32"
                                           Foreground="#444"/>
-                                <TextBlock Text="No hay acciones configuradas" 
+                                <TextBlock Text="{Binding Localization[NoActions]}" 
                                            Foreground="#555"
                                            FontSize="13"
                                            HorizontalAlignment="Center"/>
-                                <TextBlock Text="Abre la configuración para agregar acciones" 
+                                <TextBlock Text="{Binding Localization[NoActionsDesc]}" 
                                            Foreground="#444"
                                            FontSize="11"
                                            HorizontalAlignment="Center"/>

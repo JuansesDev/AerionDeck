@@ -4,11 +4,11 @@ using Avalonia.Media;
 namespace AerionDeck.Desktop;
 
 /// <summary>
-/// Iconos SVG centralizados para toda la aplicación
+/// Centralized SVG icons for the entire application
 /// </summary>
 public static class Icons
 {
-    // === Sistema ===
+    // === System ===
     public static readonly StreamGeometry Settings = StreamGeometry.Parse(
         "M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66Z");
 
@@ -43,7 +43,7 @@ public static class Icons
     public static readonly StreamGeometry MicrophoneOff = StreamGeometry.Parse(
         "M19 11c0 1.19-.34 2.3-.9 3.28l-1.23-1.23c.27-.62.43-1.31.43-2.05H19m-4 .16L9 5.18V5a3 3 0 0 1 3-3 3 3 0 0 1 3 3v6c0 .06 0 .11-.01.16M4.27 3 3 4.27l6.01 6.01V11a3 3 0 0 0 3 3c.23 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-3.03 0-5.5-2.47-5.5-5.5H5c0 3.53 2.61 6.44 6 6.93V21h2v-3.07c.86-.12 1.67-.39 2.41-.77l3.32 3.32 1.27-1.27L4.27 3Z");
 
-    // === Acciones ===
+    // === Actions ===
     public static readonly StreamGeometry Plus = StreamGeometry.Parse(
         "M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z");
 
@@ -71,7 +71,7 @@ public static class Icons
     public static readonly StreamGeometry Close = StreamGeometry.Parse(
         "M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z");
 
-    // === Conexión ===
+    // === Connection ===
     public static readonly StreamGeometry QrCode = StreamGeometry.Parse(
         "M3 11h2v2H3v-2m8-6h2v4h-2V5m-2 6h4v4h-2v-2H9v-2m6 0h2v2h2v-2h2v2h-2v2h2v4h-2v2h-2v-2h-4v2h-2v-4h4v-2h2v-2h-2v-2m4 8v-4h-2v4h2M15 3h6v6h-6V3m2 2v2h2V5h-2M3 3h6v6H3V3m2 2v2h2V5H5M3 15h6v6H3v-6m2 2v2h2v-2H5Z");
 
@@ -128,4 +128,59 @@ public static class Icons
 
     public static readonly StreamGeometry Spotify = StreamGeometry.Parse(
         "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.59 14.42c-.18.3-.56.4-.86.22-2.36-1.44-5.33-1.76-8.83-.96-.33.07-.66-.14-.73-.47-.07-.33.14-.66.47-.73 3.86-.88 7.19-.51 9.9 1.15.3.18.4.56.22.86zm1.23-2.74c-.23.37-.71.49-1.08.26-2.7-1.66-6.81-2.14-9.99-1.17-.42.13-.87-.11-1-.53-.13-.42.11-.87.53-1 3.63-1.1 8.21-.56 11.28 1.33.37.23.49.71.26 1.08zm.11-2.88c-3.23-1.92-8.56-2.1-11.64-1.16-.5.15-1.02-.14-1.17-.64-.15-.5.14-1.02.64-1.17 3.55-1.08 9.44-.87 13.15 1.33.45.27.6.85.33 1.3-.27.45-.85.6-1.3.33z");
+    // === Social & Web ===
+    public static readonly StreamGeometry Twitter = StreamGeometry.Parse(
+        "M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23Z");
+
+    public static readonly StreamGeometry Youtube = StreamGeometry.Parse(
+        "M21.58 7.19c-.23-.86-.91-1.54-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42c-.86.23-1.54.91-1.77 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.91 1.54 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42c.86-.23 1.54-.91 1.77-1.77C22 15.25 22 12 22 12s0-3.25-.42-4.81zM10 15V9l5.2 3-5.2 3z");
+
+    public static readonly StreamGeometry Twitch = StreamGeometry.Parse(
+        "M21 7.06v11.3H16v3.94h-3.94l-2.83-2.83H6.36L3 16.65V2.12h18v4.94zm-2.83 9.88V4.94H5.83v10.12h4.52L12.6 17.3v-2.24h5.57zM16.48 7.76h-1.69v4.52h1.69V7.76zm-4.52 0h-1.69v4.52h1.69V7.76z");
+
+    // === Adobe / Creative ===
+    public static readonly StreamGeometry Photoshop = StreamGeometry.Parse(
+        "M4 4h16v16H4V4m1.5 1.5v13h13v-13h-13m2.5 3h3c1.5 0 2.5 1 2.5 2.5S12.5 13.5 11 13.5H9.5v3H8V8.5m1.5 1.5v2H11c.7 0 1.2-.5 1.2-1s-.5-1-1.2-1H9.5m5 1.5c.5 0 1 .1 1.3.3l.5-1.1c-.5-.3-1.1-.4-1.8-.4-1.5 0-2.5 1-2.5 2.7 0 1.7 1 2.7 2.5 2.7.7 0 1.3-.1 1.8-.4l-.5-1.1c-.3.2-.8.3-1.3.3-.8 0-1.3-.5-1.3-1.5s.5-1.5 1.3-1.5z");
+
+    public static readonly StreamGeometry Illustrator = StreamGeometry.Parse(
+        "M4 4h16v16H4V4m1.5 1.5v13h13v-13h-13m3.5 3h1.8l2.9 8h-1.6l-.6-2h-3l-.6 2H6.4l2.6-8m.9 4.8h2.2L10.2 9l-.8 4.3m6.9-3.3h1.5v6.5h-1.5v-6.5m0-2h1.5v1.5h-1.5V8z");
+
+    public static readonly StreamGeometry Premiere = StreamGeometry.Parse(
+        "M4 4h16v16H4V4m1.5 1.5v13h13v-13h-13m2.5 3h3c1.5 0 2.5 1 2.5 2.5S12.5 13.5 11 13.5H9.5v3H8V8.5m1.5 1.5v2H11c.7 0 1.2-.5 1.2-1s-.5-1-1.2-1H9.5m5 1.5h1.4v1c.2-.7.8-1 1.5-1h.3v1.5h-.4c-.9 0-1.4.5-1.4 1.5v3.5h-1.4v-6.5z");
+
+    // === Office ===
+    public static readonly StreamGeometry Word = StreamGeometry.Parse(
+        "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2M7 7h10v2H7V7m0 4h10v2H7v-2m0 4h7v2H7v-2z");
+
+    public static readonly StreamGeometry Excel = StreamGeometry.Parse(
+        "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-8 14H9v-2h2v2m0-4H9v-2h2v2m0-4H9V7h2v2m4 8h-2v-2h2v2m0-4h-2v-2h2v2m0-4h-2V7h2v2z");
+
+    public static readonly StreamGeometry PowerPoint = StreamGeometry.Parse(
+        "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-8 14H9v-4H7V7h5.5c1.93 0 3.5 1.57 3.5 3.5S14.43 14 12.5 14H11v3m0-5h1.5c.83 0 1.5-.67 1.5-1.5S13.33 9 12.5 9H11v3z");
+
+    // === System ===
+    public static readonly StreamGeometry Calculator = StreamGeometry.Parse(
+        "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-6 14H7v-2h6v2m4-4H7v-2h10v2m0-4H7V7h10v2z");
+
+    public static readonly StreamGeometry Home = StreamGeometry.Parse(
+        "M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z");
+
+    public static readonly StreamGeometry Lock = StreamGeometry.Parse(
+        "M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z");
+
+    public static readonly StreamGeometry Power = StreamGeometry.Parse(
+        "M13 3h-2v10h2V3m4.83 2.17-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z");
+
+    // === Arrows ===
+    public static readonly StreamGeometry ArrowLeft = StreamGeometry.Parse(
+        "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z");
+    
+    public static readonly StreamGeometry ArrowRight = StreamGeometry.Parse(
+        "M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z");
+
+    public static readonly StreamGeometry Refresh = StreamGeometry.Parse(
+        "M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z");
+
+    public static readonly StreamGeometry Globe = StreamGeometry.Parse(
+        "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z");
 }
