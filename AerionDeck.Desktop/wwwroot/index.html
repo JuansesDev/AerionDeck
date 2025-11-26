@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1">
+    <meta name="theme-color" content="#0d0d1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>AerionDeck</title>
+    <style>
+        :root {
+            --bg-primary: #0d0d1a;
+            --bg-secondary: #15152a;
+            --bg-tertiary: #1a1a30;
+            --accent: #6366f1;
+            --accent-light: #8b8bf0;
+            --text-primary: #f0f0f0;
+            --text-secondary: #888;
+            --text-muted: #555;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #e63946;
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; 
+            background: var(--bg-primary);
+            color: var(--text-primary); 
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo svg {
+            width: 28px;
+            height: 28px;
+            fill: var(--accent);
+        }
+        
+        .logo h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        
+        .status-badge { 
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            background: var(--bg-tertiary);
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            transition: background 0.3s;
+        }
+        
+        .status-badge.connected .status-dot { background: var(--success); }
+        .status-badge.disconnected .status-dot { background: var(--danger); }
+        .status-badge.connecting .status-dot { 
+            background: var(--warning);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        /* Deck Grid */
+        .deck-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+            gap: 12px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        @media (min-width: 400px) {
+            .deck-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        .deck-button { 
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: var(--accent); 
+            border: none; 
+            border-radius: var(--radius); 
+            color: white; 
+            cursor: pointer; 
+            transition: transform 0.1s, opacity 0.1s;
+            padding: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .deck-button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            pointer-events: none;
+        }
+        
+        .deck-button:disabled { 
+            background: var(--bg-tertiary) !important;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .deck-button:active:not(:disabled) { 
+            transform: scale(0.94);
+        }
+        
+        .deck-button svg {
+            width: 32px;
+            height: 32px;
+            fill: currentColor;
+        }
+        
+        .deck-button .label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-align: center;
+            line-height: 1.2;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* States */
+        .loading-state,
+        .empty-state,
+        .error-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        
+        .loading-state svg,
+        .empty-state svg,
+        .error-state svg {
+            width: 48px;
+            height: 48px;
+            fill: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        
+        .loading-state .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--bg-tertiary);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .state-title {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+        
+        .state-description {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        /* Footer */
+        .footer {
+            padding: 14px 20px;
+            background: var(--bg-secondary);
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        
+        .footer span {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Haptic feedback animation */
+        @keyframes buttonPress {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.92); }
+            100% { transform: scale(1); }
+        }
+        
+        .deck-button.pressed {
+            animation: buttonPress 0.15s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <svg viewBox="0 0 24 24"><path d="M7.97 16 5 19c-.9.9-2.37.9-3.27 0-.9-.9-.9-2.37 0-3.27L5 12.46A6 6 0 0 1 7.97 16M19 5c-.9-.9-2.37-.9-3.27 0L12.46 8.27A6 6 0 0 1 16 11.24l3-3c.9-.9.9-2.37 0-3.27m-8.61 10.61c-1.17 1.17-3.07 1.17-4.24 0-1.17-1.17-1.17-3.07 0-4.24l4.24-4.24c1.17-1.17 3.07-1.17 4.24 0 1.17 1.17 1.17 3.07 0 4.24l-4.24 4.24Z"/></svg>
+            <h1>AerionDeck</h1>
+        </div>
+        <div class="status-badge connecting" id="status">
+            <div class="status-dot"></div>
+            <span id="statusText">Conectando</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="deck-grid" id="deckGrid">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p class="state-title">Cargando</p>
+                <p class="state-description">Conectando con el servidor...</p>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="footer">
+        <span>AerionDeck</span> • Open Source Stream Deck
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+    <script>
+        // SVG Icons map
+        const ICONS = {
+            'volume-mute': '<path d="M16.5 12c0-1.77-1-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63m2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71M4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3M12 4 9.91 6.09 12 8.18V4z"/>',
+            'volume-up': '<path d="M3 9v6h4l5 5V4L7 9H3m13.5 3c0-1.77-1-3.29-2.5-4.03v8.05c1.5-.71 2.5-2.24 2.5-4.02Z"/>',
+            'volume-down': '<path d="M5 9v6h4l5 5V4L9 9H5m11.5 3c0-1.77-1-3.29-2.5-4.03v8.05c1.5-.71 2.5-2.24 2.5-4.02Z"/>',
+            'volume-high': '<path d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77M16.5 12c0-1.77-1-3.29-2.5-4.03V16c1.5-.71 2.5-2.24 2.5-4M3 9v6h4l5 5V4L7 9H3z"/>',
+            'microphone': '<path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3 3 3 0 0 1-3-3V5a3 3 0 0 1 3-3m7 9c0 3.53-2.61 6.44-6 6.93V21h-2v-3.07c-3.39-.49-6-3.4-6-6.93h2a5 5 0 0 0 5 5 5 5 0 0 0 5-5h2Z"/>',
+            'microphone-off': '<path d="M19 11c0 1.19-.34 2.3-.9 3.28l-1.23-1.23c.27-.62.43-1.31.43-2.05H19m-4 .16L9 5.18V5a3 3 0 0 1 3-3 3 3 0 0 1 3 3v6c0 .06 0 .11-.01.16M4.27 3 3 4.27l6.01 6.01V11a3 3 0 0 0 3 3c.23 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-3.03 0-5.5-2.47-5.5-5.5H5c0 3.53 2.61 6.44 6 6.93V21h2v-3.07c.86-.12 1.67-.39 2.41-.77l3.32 3.32 1.27-1.27L4.27 3Z"/>',
+            'play': '<path d="M8 5v14l11-7z"/>',
+            'stop': '<path d="M6 6h12v12H6z"/>',
+            'record': '<path d="M12 2a10 10 0 0 0-10 10 10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2m0 4a6 6 0 0 1 6 6 6 6 0 0 1-6 6 6 6 0 0 1-6-6 6 6 0 0 1 6-6Z"/>',
+            'camera': '<path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2m8 3a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 2a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3Z"/>',
+            'monitor': '<path d="M21 16V4H3v12h18m0-14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-7v2h2v2H8v-2h2v-2H3a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h18Z"/>',
+            'gamepad': '<path d="M7.97 16 5 19c-.9.9-2.37.9-3.27 0-.9-.9-.9-2.37 0-3.27L5 12.46A6 6 0 0 1 7.97 16M19 5c-.9-.9-2.37-.9-3.27 0L12.46 8.27A6 6 0 0 1 16 11.24l3-3c.9-.9.9-2.37 0-3.27m-8.61 10.61c-1.17 1.17-3.07 1.17-4.24 0-1.17-1.17-1.17-3.07 0-4.24l4.24-4.24c1.17-1.17 3.07-1.17 4.24 0 1.17 1.17 1.17 3.07 0 4.24l-4.24 4.24Z"/>',
+            'keyboard': '<path d="M19 10h-2V8h2v2m0 4h-2v-2h2v2m-4-4h-2V8h2v2m0 4h-2v-2h2v2m0 4H9v-2h6v2m-8-8H5V8h2v2m0 4H5v-2h2v2m8-4h-2V8h2v2m0 4h-2v-2h2v2M5 18h2v-2H5v2M3 6h18v12H3V6m0-2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H3Z"/>',
+            'web': '<path d="M16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38m-5.15 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 0 1-4.33 3.56M14.34 14H9.66c-.1-.66-.16-1.32-.16-2 0-.68.06-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2M12 19.96c-.83-1.2-1.5-2.53-1.91-3.96h3.82c-.41 1.43-1.08 2.76-1.91 3.96M8 8H5.08A7.923 7.923 0 0 1 9.4 4.44C8.8 5.55 8.35 6.75 8 8m-2.92 8H8c.35 1.25.8 2.45 1.4 3.56A8.008 8.008 0 0 1 5.08 16m-.82-2C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26M12 4.03c.83 1.2 1.5 2.54 1.91 3.97h-3.82c.41-1.43 1.08-2.77 1.91-3.97M18.92 8h-2.95a15.65 15.65 0 0 0-1.38-3.56c1.84.63 3.37 1.9 4.33 3.56M12 2C6.47 2 2 6.5 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2Z"/>',
+            'link': '<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8v2m9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1 0 1.71-1.39 3.1-3.1 3.1h-4V17h4a5 5 0 0 0 5-5 5 5 0 0 0-5-5Z"/>',
+            'lightning': '<path d="M11 15H6l7-14v8h5l-7 14v-8Z"/>',
+            'settings': '<path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66Z"/>',
+            // Fallback
+            'default': '<path d="M11 15H6l7-14v8h5l-7 14v-8Z"/>'
+        };
+
+        function getIcon(iconId) {
+            return `<svg viewBox="0 0 24 24">${ICONS[iconId] || ICONS['default']}</svg>`;
+        }
+
+        // Connection setup
+        const HUB_URL = `${window.location.origin}/aerionhub`;
+        const API_URL = `${window.location.origin}/api/actions`;
+        
+        const statusEl = document.getElementById('status');
+        const statusTextEl = document.getElementById('statusText');
+        const gridEl = document.getElementById('deckGrid');
+        
+        let actions = [];
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(HUB_URL)
+            .withAutomaticReconnect([0, 1000, 2000, 5000])
+            .build();
+
+        function setStatus(status, text) {
+            statusEl.className = `status-badge ${status}`;
+            statusTextEl.textContent = text;
+            
+            document.querySelectorAll('.deck-button').forEach(btn => {
+                btn.disabled = status !== 'connected';
+            });
+        }
+
+        connection.start()
+            .then(() => {
+                setStatus('connected', 'Conectado');
+                loadActions();
+            })
+            .catch(err => {
+                setStatus('disconnected', 'Sin conexión');
+                showError();
+            });
+
+        connection.onreconnecting(() => setStatus('connecting', 'Reconectando'));
+        connection.onreconnected(() => {
+            setStatus('connected', 'Conectado');
+            loadActions();
+        });
+        connection.onclose(() => setStatus('disconnected', 'Desconectado'));
+
+        async function loadActions() {
+            try {
+                const response = await fetch(API_URL);
+                actions = await response.json();
+                renderDeck();
+            } catch (err) {
+                console.error("Error loading actions:", err);
+                showError();
+            }
+        }
+
+        function showError() {
+            gridEl.innerHTML = `
+                <div class="error-state">
+                    <svg viewBox="0 0 24 24"><path d="M13 13h-2V7h2m0 10h-2v-2h2M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2Z"/></svg>
+                    <p class="state-title">Error de conexión</p>
+                    <p class="state-description">No se pudo conectar al servidor</p>
+                </div>
+            `;
+        }
+
+        function renderDeck() {
+            if (actions.length === 0) {
+                gridEl.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        <p class="state-title">Sin acciones</p>
+                        <p class="state-description">Configura acciones en el escritorio</p>
+                    </div>
+                `;
+                return;
+            }
+
+            gridEl.innerHTML = actions.map(action => `
+                <button class="deck-button" 
+                        data-action-id="${action.id}"
+                        style="background-color: ${action.backgroundColor}"
+                        ${connection.state !== 'Connected' ? 'disabled' : ''}>
+                    ${getIcon(action.icon)}
+                    <span class="label">${action.name}</span>
+                </button>
+            `).join('');
+
+            document.querySelectorAll('.deck-button').forEach(btn => {
+                btn.addEventListener('click', handleButtonClick);
+                btn.addEventListener('touchstart', handleTouchStart, { passive: true });
+            });
+        }
+
+        function handleTouchStart(e) {
+            const btn = e.currentTarget;
+            btn.classList.add('pressed');
+            setTimeout(() => btn.classList.remove('pressed'), 150);
+        }
+
+        function handleButtonClick(e) {
+            const btn = e.currentTarget;
+            const actionId = btn.dataset.actionId;
+            
+            // Visual feedback
+            btn.classList.add('pressed');
+            setTimeout(() => btn.classList.remove('pressed'), 150);
+            
+            // Haptic feedback if available
+            if (navigator.vibrate) {
+                navigator.vibrate(10);
+            }
+            
+            sendAction(actionId);
+        }
+
+        function sendAction(actionId) {
+            connection.invoke("SendAction", actionId)
+                .catch(err => {
+                    console.error("Invoke Error:", err);
+                    setStatus('disconnected', 'Error');
+                });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,708 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AerionDeck.Desktop.ViewModels"
+             xmlns:conv="using:AerionDeck.Desktop.Converters"
+             xmlns:icons="using:AerionDeck.Desktop"
+             xmlns:m="using:AerionDeck.Desktop.Models"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="600"
+             x:Class="AerionDeck.Desktop.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel"
+             x:Name="Root"
+             Background="#0d0d1a">
+
+    <UserControl.Resources>
+        <conv:IconConverter x:Key="IconConverter"/>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="*,Auto">
+        
+        <!-- Contenido principal -->
+        <ScrollViewer Grid.Row="0" 
+                      VerticalScrollBarVisibility="Auto"
+                      Margin="24,20">
+            <StackPanel Spacing="20">
+                
+                <!-- Sección: Idioma -->
+                <Border Background="#15152a" 
+                        CornerRadius="16" 
+                        Padding="20"
+                        BoxShadow="0 4 20 0 #10000000">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <PathIcon Data="{x:Static icons:Icons.Globe}" 
+                                      Width="20" Height="20"
+                                      Foreground="#6366f1"/>
+                            <TextBlock Text="{Binding Localization[Language]}" 
+                                       FontSize="16" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="#f0f0f0"/>
+                        </StackPanel>
+                        
+                        <ComboBox Grid.Column="1"
+                                  ItemsSource="{Binding Languages}"
+                                  SelectedItem="{Binding SelectedLanguage}"
+                                  Background="#0d0d1a"
+                                  Foreground="White"
+                                  CornerRadius="8"
+                                  MinWidth="120">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate DataType="vm:SettingsViewModel+LanguageOption">
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                </Border>
+
+                <!-- Sección: Perfiles -->
+                <Border Background="#15152a" 
+                        CornerRadius="16" 
+                        Padding="20"
+                        BoxShadow="0 4 20 0 #10000000">
+                    <StackPanel Spacing="16">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <PathIcon Data="{x:Static icons:Icons.Folder}" 
+                                          Width="20" Height="20"
+                                          Foreground="#6366f1"/>
+                                <TextBlock Text="{Binding Localization[Profile]}" 
+                                           FontSize="16" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="#f0f0f0"/>
+                            </StackPanel>
+                            
+                            <StackPanel Orientation="Horizontal" Spacing="8" Grid.Column="1">
+                                <Button Command="{Binding ExportProfileCommand}"
+                                        Background="Transparent"
+                                        Padding="8"
+                                        CornerRadius="6"
+                                        Cursor="Hand"
+                                        ToolTip.Tip="{Binding Localization[ExportProfile]}">
+                                    <PathIcon Data="{x:Static icons:Icons.Link}" Width="16" Height="16" Foreground="#aaa"/>
+                                </Button>
+                                <Button Command="{Binding DeleteProfileCommand}"
+                                        Background="Transparent"
+                                        Padding="8"
+                                        CornerRadius="6"
+                                        Cursor="Hand"
+                                        ToolTip.Tip="{Binding Localization[DeleteProfile]}">
+                                    <PathIcon Data="{x:Static icons:Icons.Delete}" Width="16" Height="16" Foreground="#e63946"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                            <ComboBox Grid.Row="0" Grid.Column="0"
+                                      ItemsSource="{Binding Profiles}"
+                                      SelectedItem="{Binding SelectedProfile}"
+                                      HorizontalAlignment="Stretch"
+                                      Background="#0d0d1a"
+                                      Foreground="White"
+                                      CornerRadius="8"
+                                      Margin="0,0,10,0">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate DataType="m:Profile">
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <Button Grid.Row="0" Grid.Column="1"
+                                    Command="{Binding AddProfileCommand}"
+                                    Background="#6366f1"
+                                    Padding="12,8"
+                                    CornerRadius="8"
+                                    Cursor="Hand">
+                                <PathIcon Data="{x:Static icons:Icons.Plus}" Width="16" Height="16" Foreground="White"/>
+                            </Button>
+                            
+                            <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                     Text="{Binding NewProfileName}"
+                                     Watermark="{Binding Localization[NewProfilePlaceholder]}"
+                                     Margin="0,10,0,0"
+                                     Background="#0d0d1a"
+                                     Foreground="White"
+                                     BorderBrush="#333"
+                                     BorderThickness="1"
+                                     CornerRadius="8"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Sección: Lista de acciones -->
+                <Border Background="#15152a" 
+                        CornerRadius="16" 
+                        Padding="20"
+                        BoxShadow="0 4 20 0 #10000000">
+                    <StackPanel Spacing="16">
+                        <!-- Header -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <PathIcon Data="{x:Static icons:Icons.Lightning}" 
+                                          Width="20" Height="20"
+                                          Foreground="#6366f1"/>
+                                <TextBlock Text="{Binding Localization[Actions]}" 
+                                           FontSize="16" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="#f0f0f0"/>
+                            </StackPanel>
+                            
+                            <!-- Botón agregar -->
+                            <Button Grid.Column="1"
+                                    Command="{Binding AddActionCommand}"
+                                    Background="#6366f1"
+                                    Padding="12,8"
+                                    CornerRadius="8"
+                                    Cursor="Hand">
+                                <Button.Styles>
+                                    <Style Selector="Button:pointerover">
+                                        <Setter Property="Background" Value="#7c7ff0"/>
+                                    </Style>
+                                </Button.Styles>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <PathIcon Data="{x:Static icons:Icons.Plus}"
+                                              Width="16" Height="16"
+                                              Foreground="White"/>
+                                    <TextBlock Text="{Binding Localization[Add]}" 
+                                               Foreground="White"
+                                               FontSize="13"
+                                               FontWeight="Medium"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        
+                        <!-- Lista de acciones -->
+                        <ItemsControl ItemsSource="{Binding Actions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:DeckActionViewModel">
+                                    <Border Background="#1a1a30"
+                                            CornerRadius="12"
+                                            Padding="14"
+                                            Margin="0,4"
+                                            Opacity="{Binding IsEnabled, Converter={x:Static vm:SettingsViewModel.EnabledOpacityConverter}}">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <!-- Icono y color -->
+                                            <Border Width="48" Height="48"
+                                                    CornerRadius="10"
+                                                    Background="{Binding BackgroundColor}"
+                                                    Margin="0,0,14,0">
+                                                <PathIcon Data="{Binding Icon, Converter={StaticResource IconConverter}}"
+                                                          Width="24" Height="24"
+                                                          Foreground="White"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                                            </Border>
+                                            
+                                            <!-- Info -->
+                                            <StackPanel Grid.Column="1" 
+                                                        VerticalAlignment="Center"
+                                                        Spacing="2">
+                                                <TextBlock Text="{Binding Name}"
+                                                           Foreground="#f0f0f0"
+                                                           FontSize="14"
+                                                           FontWeight="Medium"/>
+                                                <TextBlock Text="{Binding Model.Command}"
+                                                           Foreground="#666"
+                                                           FontSize="11"/>
+                                            </StackPanel>
+                                            
+                                            <!-- Controles -->
+                                            <StackPanel Grid.Column="2" 
+                                                        Orientation="Horizontal" 
+                                                        Spacing="6">
+                                                <!-- Mover arriba -->
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).MoveUpCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        Padding="8"
+                                                        CornerRadius="6"
+                                                        Cursor="Hand"
+                                                        ToolTip.Tip="Mover arriba">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button:pointerover">
+                                                            <Setter Property="Background" Value="#25253a"/>
+                                                        </Style>
+                                                    </Button.Styles>
+                                                    <PathIcon Data="{x:Static icons:Icons.ChevronUp}"
+                                                              Width="16" Height="16"
+                                                              Foreground="#666"/>
+                                                </Button>
+                                                
+                                                <!-- Mover abajo -->
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).MoveDownCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        Padding="8"
+                                                        CornerRadius="6"
+                                                        Cursor="Hand"
+                                                        ToolTip.Tip="Mover abajo">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button:pointerover">
+                                                            <Setter Property="Background" Value="#25253a"/>
+                                                        </Style>
+                                                    </Button.Styles>
+                                                    <PathIcon Data="{x:Static icons:Icons.ChevronDown}"
+                                                              Width="16" Height="16"
+                                                              Foreground="#666"/>
+                                                </Button>
+                                                
+                                                <!-- Separador visual -->
+                                                <Border Width="1" Height="24" Background="#333" Margin="4,0"/>
+                                                
+                                                <!-- Habilitar/Deshabilitar -->
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).ToggleEnabledCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        Padding="8"
+                                                        CornerRadius="6"
+                                                        Cursor="Hand"
+                                                        ToolTip.Tip="Habilitar/Deshabilitar">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button:pointerover">
+                                                            <Setter Property="Background" Value="#25253a"/>
+                                                        </Style>
+                                                    </Button.Styles>
+                                                    <PathIcon Data="{Binding IsEnabled, Converter={StaticResource IconConverter}, ConverterParameter=eye}"
+                                                              Width="16" Height="16"
+                                                              Foreground="{Binding IsEnabled, Converter={StaticResource IconConverter}, ConverterParameter=eyeColor}"/>
+                                                </Button>
+                                                
+                                                <!-- Editar -->
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).EditActionCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        Padding="8"
+                                                        CornerRadius="6"
+                                                        Cursor="Hand"
+                                                        ToolTip.Tip="Editar">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button:pointerover">
+                                                            <Setter Property="Background" Value="#6366f120"/>
+                                                        </Style>
+                                                    </Button.Styles>
+                                                    <PathIcon Data="{x:Static icons:Icons.Edit}"
+                                                              Width="16" Height="16"
+                                                              Foreground="#6366f1"/>
+                                                </Button>
+                                                
+                                                <!-- Eliminar -->
+                                                <Button Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).DeleteActionCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        Padding="8"
+                                                        CornerRadius="6"
+                                                        Cursor="Hand"
+                                                        ToolTip.Tip="Eliminar">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button:pointerover">
+                                                            <Setter Property="Background" Value="#e6394620"/>
+                                                        </Style>
+                                                    </Button.Styles>
+                                                    <PathIcon Data="{x:Static icons:Icons.Delete}"
+                                                              Width="16" Height="16"
+                                                              Foreground="#e63946"/>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        
+                        <!-- Mensaje vacío -->
+                        <Border IsVisible="{Binding !Actions.Count}"
+                                Background="#0d0d1a"
+                                CornerRadius="10"
+                                Padding="30">
+                            <StackPanel Spacing="12" HorizontalAlignment="Center">
+                                <PathIcon Data="{x:Static icons:Icons.Plus}"
+                                          Width="32" Height="32"
+                                          Foreground="#444"/>
+                                <TextBlock Text="{Binding Localization[NoActions]}" 
+                                           Foreground="#555"
+                                           FontSize="13"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding Localization[NoActionsHint]}" 
+                                           Foreground="#444"
+                                           FontSize="11"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+                
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Panel de edición (overlay) -->
+        <Border Grid.Row="0" 
+                Background="#0d0d1acc"
+                IsVisible="{Binding IsEditing}">
+            <Border Background="#15152a" 
+                    CornerRadius="16" 
+                    Padding="24"
+                    MaxWidth="420"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    BoxShadow="0 8 40 0 #40000000">
+                <ScrollViewer MaxHeight="500" VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="20">
+                    <!-- Header del modal -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <PathIcon Data="{x:Static icons:Icons.Edit}" 
+                                      Width="20" Height="20"
+                                      Foreground="#6366f1"/>
+                            <TextBlock Text="{Binding Localization[EditAction]}" 
+                                       FontSize="18" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="#f0f0f0"/>
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Command="{Binding CancelEditCommand}"
+                                Background="Transparent"
+                                Padding="6"
+                                CornerRadius="6"
+                                Cursor="Hand">
+                            <Button.Styles>
+                                <Style Selector="Button:pointerover">
+                                    <Setter Property="Background" Value="#25253a"/>
+                                </Style>
+                            </Button.Styles>
+                            <PathIcon Data="{x:Static icons:Icons.Close}"
+                                      Width="18" Height="18"
+                                      Foreground="#666"/>
+                        </Button>
+                    </Grid>
+                    
+                    <!-- Campo: Nombre -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="{Binding Localization[Name]}" Foreground="#888" FontSize="12" FontWeight="Medium"/>
+                        <TextBox Text="{Binding EditName}" 
+                                 Background="#0d0d1a"
+                                 Foreground="White"
+                                 BorderBrush="#333"
+                                 BorderThickness="1"
+                                 CornerRadius="8"
+                                 Padding="12,10"/>
+                    </StackPanel>
+
+                    <!-- Campo: Icono -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="{Binding Localization[Icon]}" Foreground="#888" FontSize="12" FontWeight="Medium"/>
+                        
+                        <!-- Buscador de iconos -->
+                        <TextBox Text="{Binding IconSearchText}" 
+                                 Watermark="{Binding Localization[SearchIcon]}"
+                                 Background="#0d0d1a"
+                                 Foreground="White"
+                                 BorderBrush="#333"
+                                 BorderThickness="1"
+                                 CornerRadius="8"
+                                 Padding="8,6"
+                                 Margin="0,0,0,4"/>
+
+                        <Border Background="#0d0d1a" 
+                                CornerRadius="8" 
+                                Padding="10"
+                                BorderBrush="#333"
+                                BorderThickness="1">
+                            <ItemsControl ItemsSource="{Binding FilteredIconOptions}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="conv:IconOption">
+                                        <Button Background="{Binding Id, Converter={StaticResource IconConverter}, ConverterParameter=iconBg}"
+                                                Padding="8"
+                                                Margin="3"
+                                                CornerRadius="6"
+                                                Cursor="Hand"
+                                                ToolTip.Tip="{Binding Name}"
+                                                Click="OnIconClick"
+                                                Tag="{Binding Id}">
+                                            <Button.Styles>
+                                                <Style Selector="Button">
+                                                    <Setter Property="Background" Value="#1a1a30"/>
+                                                </Style>
+                                                <Style Selector="Button:pointerover">
+                                                    <Setter Property="Background" Value="#6366f140"/>
+                                                </Style>
+                                            </Button.Styles>
+                                            <PathIcon Data="{Binding Id, Converter={StaticResource IconConverter}}"
+                                                      Width="20" Height="20"
+                                                      Foreground="#aaa"/>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                        
+                        <!-- Preview del icono seleccionado -->
+                        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,4,0,0">
+                            <TextBlock Text="{Binding Localization[Selected]}" Foreground="#555" FontSize="11" VerticalAlignment="Center"/>
+                            <Border Width="32" Height="32"
+                                    CornerRadius="6"
+                                    Background="{Binding EditBackgroundColor}">
+                                <PathIcon Data="{Binding EditIcon, Converter={StaticResource IconConverter}}"
+                                          Width="18" Height="18"
+                                          Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Campo: Tipo de acción -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="{Binding Localization[ActionType]}" Foreground="#888" FontSize="12" FontWeight="Medium"/>
+                        <ComboBox ItemsSource="{Binding AvailableActionTypes}"
+                                  SelectedItem="{Binding EditActionType}"
+                                  Background="#0d0d1a"
+                                  Foreground="White"
+                                  CornerRadius="8"
+                                  Padding="12,10"
+                                  HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+
+                    <!-- Campo: Secuencia de Macro -->
+                    <StackPanel Spacing="8" IsVisible="{Binding IsMacroType}">
+                        <TextBlock Text="{Binding Localization[MacroSequence]}" Foreground="#888" FontSize="12" FontWeight="Medium"/>
+                        
+                        <Border Background="#0d0d1a" 
+                                CornerRadius="8" 
+                                Padding="10"
+                                BorderBrush="#333"
+                                BorderThickness="1">
+                            <StackPanel Spacing="8">
+                                <ItemsControl ItemsSource="{Binding MacroSubActions}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#1a1a30" CornerRadius="6" Padding="8" Margin="0,0,0,4">
+                                                <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+                                                    <!-- Icono -->
+                                                    <PathIcon Data="{Binding Icon, Converter={StaticResource IconConverter}}" 
+                                                              Width="16" Height="16" 
+                                                              Foreground="#aaa"
+                                                              VerticalAlignment="Center"
+                                                              Margin="0,0,8,0"/>
+                                                    
+                                                    <!-- Configuración de la sub-acción -->
+                                                    <StackPanel Grid.Column="1" Spacing="4">
+                                                        <!-- Tipo y Comando -->
+                                                        <Grid ColumnDefinitions="Auto,*">
+                                                            <ComboBox SelectedItem="{Binding Model.Type}"
+                                                                      ItemsSource="{Binding #Root.DataContext.AvailableActionTypes}"
+                                                                      Background="#25253a"
+                                                                      Foreground="White"
+                                                                      CornerRadius="4"
+                                                                      Padding="8,4"
+                                                                      FontSize="11"
+                                                                      Margin="0,0,4,0"
+                                                                      VerticalAlignment="Center"/>
+                                                            
+                                                            <TextBox Grid.Column="1"
+                                                                     Text="{Binding Model.Command}"
+                                                                     Background="#25253a"
+                                                                     Foreground="White"
+                                                                     BorderThickness="0"
+                                                                     CornerRadius="4"
+                                                                     Padding="8,4"
+                                                                     FontSize="11"
+                                                                     Watermark="Comando / Delay (ms)"/>
+                                                        </Grid>
+                                                    </StackPanel>
+
+                                                    <!-- Botones de movimiento -->
+                                                    <Button Grid.Column="2"
+                                                            Command="{Binding #Root.DataContext.MoveSubActionUpCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="Transparent"
+                                                            Padding="4"
+                                                            Margin="4,0,0,0">
+                                                        <PathIcon Data="{x:Static icons:Icons.ChevronUp}" Width="12" Height="12" Foreground="#666"/>
+                                                    </Button>
+                                                    
+                                                    <Button Grid.Column="3"
+                                                            Command="{Binding #Root.DataContext.MoveSubActionDownCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="Transparent"
+                                                            Padding="4">
+                                                        <PathIcon Data="{x:Static icons:Icons.ChevronDown}" Width="12" Height="12" Foreground="#666"/>
+                                                    </Button>
+
+                                                    <!-- Botón Eliminar -->
+                                                    <Button Grid.Column="4"
+                                                            Command="{Binding #Root.DataContext.RemoveSubActionCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Background="Transparent"
+                                                            Padding="4"
+                                                            Margin="4,0,0,0">
+                                                        <PathIcon Data="{x:Static icons:Icons.Delete}" Width="14" Height="14" Foreground="#e63946"/>
+                                                    </Button>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!-- Botón Agregar Paso -->
+                                <Button Command="{Binding AddSubActionCommand}"
+                                        Background="#25253a"
+                                        Foreground="#aaa"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        CornerRadius="6"
+                                        Padding="8"
+                                        Cursor="Hand">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <PathIcon Data="{x:Static icons:Icons.Plus}" Width="12" Height="12"/>
+                                        <TextBlock Text="{Binding Localization[AddStep]}" FontSize="12"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Campo: Comando (ComboBox para Audio, TextBox para Launch) -->
+                    <StackPanel Spacing="8" IsVisible="{Binding !IsMacroType}">
+                        <TextBlock Text="{Binding Localization[Command]}" Foreground="#888" FontSize="12" FontWeight="Medium"/>
+                        
+                        <!-- ComboBox para selección de comandos predefinidos -->
+                        <ComboBox ItemsSource="{Binding AvailableCommands}"
+                                  SelectedItem="{Binding EditCommand}"
+                                  IsVisible="{Binding IsAudioType}"
+                                  Background="#0d0d1a"
+                                  Foreground="White"
+                                  CornerRadius="8"
+                                  Padding="12,10"
+                                  HorizontalAlignment="Stretch"/>
+                        
+                        <!-- TextBox para aplicaciones personalizadas -->
+                        <StackPanel IsVisible="{Binding IsLaunchType}" Spacing="6">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBox Text="{Binding EditCommand}" 
+                                         Background="#0d0d1a"
+                                         Foreground="White"
+                                         BorderBrush="#333"
+                                         BorderThickness="1"
+                                         CornerRadius="8"
+                                         Padding="12,10"
+                                         Watermark="{Binding Localization[CommandPlaceholder]}"/>
+                                <Button Grid.Column="1"
+                                        Command="{Binding BrowseFileCommand}"
+                                        Margin="8,0,0,0"
+                                        Padding="10"
+                                        CornerRadius="8"
+                                        Background="#25253a"
+                                        ToolTip.Tip="Buscar archivo">
+                                    <PathIcon Data="{x:Static icons:Icons.Folder}" Foreground="#aaa"/>
+                                </Button>
+                            </Grid>
+                            <TextBlock Text="{Binding Localization[MultiLaunchHint]}" 
+                                       Foreground="#555"
+                                       FontSize="11"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Campo: Color -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="{Binding Localization[Color]}" Foreground="#888" FontSize="12" FontWeight="Medium"/>
+                        <Border Background="#0d0d1a" 
+                                CornerRadius="8" 
+                                Padding="10"
+                                BorderBrush="#333"
+                                BorderThickness="1">
+                            <ItemsControl ItemsSource="{Binding SuggestedColors}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Background="{Binding}"
+                                                Width="36" Height="36"
+                                                Margin="3"
+                                                CornerRadius="8"
+                                                Cursor="Hand"
+                                                Click="OnColorClick">
+                                            <Button.Styles>
+                                                <Style Selector="Button:pointerover">
+                                                    <Setter Property="Opacity" Value="0.8"/>
+                                                </Style>
+                                            </Button.Styles>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Checkbox: Habilitado -->
+                    <CheckBox Content="{Binding Localization[ActionEnabled]}" 
+                              IsChecked="{Binding EditIsEnabled}"
+                              Foreground="#aaa"
+                              FontSize="13"/>
+
+                    <!-- Botones de acción -->
+                    <Grid ColumnDefinitions="*,*" Margin="0,8,0,0">
+                        <Button Grid.Column="0" 
+                                Command="{Binding CancelEditCommand}"
+                                Background="#333"
+                                Foreground="White"
+                                Padding="16,12"
+                                CornerRadius="10"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Margin="0,0,6,0"
+                                Cursor="Hand">
+                            <Button.Styles>
+                                <Style Selector="Button:pointerover">
+                                    <Setter Property="Background" Value="#444"/>
+                                </Style>
+                            </Button.Styles>
+                            <TextBlock Text="{Binding Localization[Cancel]}" FontWeight="Medium"/>
+                        </Button>
+                        <Button Grid.Column="1" 
+                                Command="{Binding SaveEditCommand}"
+                                Background="#6366f1"
+                                Foreground="White"
+                                Padding="16,12"
+                                CornerRadius="10"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Margin="6,0,0,0"
+                                Cursor="Hand">
+                            <Button.Styles>
+                                <Style Selector="Button:pointerover">
+                                    <Setter Property="Background" Value="#7c7ff0"/>
+                                </Style>
+                            </Button.Styles>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <PathIcon Data="{x:Static icons:Icons.Check}"
+                                          Width="16" Height="16"
+                                          Foreground="White"/>
+                                <TextBlock Text="{Binding Localization[Save]}" FontWeight="Medium"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Border>
+
+        <!-- Footer -->
+        <Border Grid.Row="1" 
+                Background="#15152a"
+                Padding="16,12">
+            <TextBlock Text="Los cambios se guardan automáticamente" 
+                       HorizontalAlignment="Center"
+                       Foreground="#444"
+                       FontSize="11"/>
+        </Border>
+    </Grid>
+</UserControl>
